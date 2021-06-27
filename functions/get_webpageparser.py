@@ -123,18 +123,21 @@ class webparser_anisearch:
 
 		return relationlist
 	#----------------------------------------
-	# PrimaryKey Anisearch
-	# ID
+	# PrimaryKey Anisearch - good
+	# <- anisearch web link for anime
+	# -> number PrimaryKey from anisearch web link
+	# get PrimaryKey from anisearch web link
 	#----------------------------------------
 	def get_anisearchPrimaryKey(self, link):
 		number = ""
-		try:
-			p = re.compile(r'\/\d+')
-			get_animeNumber= p.findall(link)
-			number = get_animeNumber[0]
-			number = number.replace("/", "")
-		except:
-			print("ERROR - get_anisearchPrimaryKey - please check link: " + link )
+		if link:
+			try:
+				p = re.compile(r'\/\d+')
+				get_animeNumber= p.findall(link)
+				number = get_animeNumber[0]
+				number = number.replace("/", "")
+			except:
+				print("ERROR - get_anisearchPrimaryKey - please check link: " + link )
 			
 		return number
 
