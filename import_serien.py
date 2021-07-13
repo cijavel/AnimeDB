@@ -208,7 +208,7 @@ def insert_anime_in_DB(DBconn, list_of_anime):
 					conn.commit()
 				print("Add Anime (" + folder + ") to DB")
 	else:
-		print("moving_folder - no folder list")
+		print("insert_anime_in_DB - no folder list")
 
 
 
