@@ -1,406 +1,352 @@
-# ********************************************************************* 
+'''
+Created on 05.07.2021
+@author: Ci
+'''
 import pyodbc
 import sqlite3
 import re
 
+
+
 try:
-    import functions.get_webpageparser as pars
+    import functions.get_configfile as confi
 except ImportError:
-    from functions import get_webpageparser as parser
+    topdir = os.path.realpath(os.path.join(os.path.dirname(__file__)+".."))
+    sys.path.insert(0,topdir)
+    from functions import get_configfile as confi
+
+try:
+	import functions.get_webpageparser as pars
+except ImportError:
+	from functions import get_webpageparser as parser
+
+try:
+    import functions.get_sql_anime as sqlAni
+except ImportError:
+    topdir = os.path.realpath(os.path.join(os.path.dirname(__file__)+".."))
+    sys.path.insert(0,topdir)
+    from functions import get_sql_anime as sqlAni
 
 # Object
-parser = pars.webparser_anisearch()
+connectAnimeDB = sqlAni.get_sql_anime()
+parser   = pars.webparser_anisearch()
 openpage = pars.open_webpage()
+config   = confi.get_configfile()
+path_DB	 = config.get_KeyValue("settings", "path_DB")
 
 
 
 
-#----------------------------------------
-# get_SQL_unsync_anime_anisearch - good
-# -> list of results
-# get the list of anime, which hasn't syncronized with anisearch jet - toDo List ;)
-#----------------------------------------
-def get_SQL_unsyncList_anime_anisearch(DBconn):
-	strSQL = 'SELECT anime.ID, anime.anisearch_link, anime.foldername FROM anime WHERE (((anime.fs_as_anime IS NULL OR anime.fs_as_anime ="")) AND (anime.anisearch_link IS NOT NULL))'
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSQL)
-		results = cursor.fetchall()
-	return(results)
 
+class set_sql_anime:
+	# **************************************************************************
+	# ********************* UPDATE FUNCTIONS ***********************************
+	# **************************************************************************
 
-# **************************************************************************
-# ********************* get Number for DB **********************************
-# **************************************************************************
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_infordetails
+	# - update info details of the anime from anisearch
+	# in:  DB connention, html raw, anisearch ID
+	#----------------------------------------
+	def __set_SQL_update_infordetails(DBconn, soup, vID_Anisearch):
+		results = ""
+		vTyp = ""
+		vEpisoden = ""
+		vVeroeffentlicht = ""
+		vHauptgenres = ""
+		vHerkunft = ""
+		vAdaptiert = ""
+		vZielgruppe = ""
 
-#----------------------------------------
-# get_SQL_GenreID - good
-# <- Name of genre
-# -> number ID
-# get ID from genre name
-#----------------------------------------
-def get_SQL_GenreID(DBconn, genreName):
-	strSelectSQL = "SELECT as_genre.ID, as_genre.genre FROM as_genre WHERE as_genre.genre =:v_genre" 
-	id = ""
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"v_genre": genreName})
-		results = cursor.fetchall()
+		infosD = parser.get_infodetails(soup)
 		
-	if not results:
+		if 'Typ' 			in infosD: vTyp =		connectAnimeDB.get_SQL_TypeID(DBconn, infosD['Typ'])
+		if 'Veröffentlicht' in infosD: vPubDate = 	infosD['Veröffentlicht']
+		if 'Hauptgenres' 	in infosD: vGenre = 	connectAnimeDB.get_SQL_GenreID(DBconn, infosD['Hauptgenres'])
+		if 'Herkunft' 		in infosD: vOrigin =	connectAnimeDB.get_SQL_originID(DBconn, infosD['Herkunft'])
+		if 'Adaptiert von'	in infosD: vAdapt =	 	connectAnimeDB.get_SQL_AdaptionID(DBconn, infosD['Adaptiert von'])
+		if 'Zielgruppe' 	in infosD: vGroup = 	connectAnimeDB.get_SQL_TargetGroupID(DBconn, infosD['Zielgruppe'])
+		if 'Episoden' 		in infosD: 
+			strEpisoden = infosD['Episoden']
+			x = re.findall("~[0-9]*min", strEpisoden)
+			y = re.findall("[0-9]* ", strEpisoden)
+			vEpisoden_length = x[0]
+			vEpisoden_Nr = y[0].strip()
+		
+
+		#Check IF anime has already Content 
+		strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :v_ID"
 		conn = sqlite3.connect(DBconn)
 		with conn:
 			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_genre (genre) VALUES (:v_genre)"
-			cursor.execute(strInsertSQL, {"v_genre": genreName})
-			conn.commit()
-			print(cursor.rowcount, "genre record(s) added ( " + genreName + " )" ) 
-			cursor.execute(strSelectSQL, {"v_genre": genreName})
+			cursor.execute(strSelectSQL, {"v_ID": vID_Anisearch})
 			results = cursor.fetchall()
 
-	if results:
-		for row in results:
-			(id, name) = row	
-	
-	return(id)
-
-#----------------------------------------
-# get_SQL_TypeID - good
-# <- Name of type
-# -> number ID
-# get ID from type name
-#----------------------------------------
-def get_SQL_TypeID(DBconn, typeName):
-	strSelectSQL = "SELECT as_type.ID, as_type.type FROM as_type WHERE as_type.type = :v_type" 
-	id = ""
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"v_type": typeName})
-		results = cursor.fetchall()
-	if not results:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_type (type) VALUES (:v_type)"
-			cursor.execute(strInsertSQL, {"v_type": typeName})
-			conn.commit()
-			print(cursor.rowcount, "Type record(s) added ( " + typeName + " )" ) 
-			cursor.execute(strSelectSQL, {"v_type": typeName})
-			results = cursor.fetchall()
-
-	for row in results:
-		(id, name) = row		
-	
-	return(id)
-
-#----------------------------------------
-# get_SQL_originID - good
-# <- Name of origin
-# -> number ID
-# get ID from origin name
-#----------------------------------------
-def get_SQL_originID(DBconn, originName):
-	strSelectSQL = "SELECT as_origin.ID, as_origin.origin FROM as_origin WHERE as_origin.origin = :v_origin" 
-	id = ""
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"v_origin": originName})
-		results = cursor.fetchall()
-	if not results:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_origin (origin) VALUES (:v_origin)"
-			cursor.execute(strInsertSQL, {"v_origin": originName})
-			conn.commit()
-			print(cursor.rowcount, "origin record(s) added ( " + originName + " )" ) 
-			cursor.execute(strSelectSQL, {"v_origin": originName})
-			results = cursor.fetchall()
-
-	for row in results:
-		(id, name) = row		
-	
-	return(id)
-
-#----------------------------------------
-# get_SQL_AdaptionID - good
-# <- Name of adaption
-# -> number ID
-# get ID from adaption name
-#----------------------------------------
-def get_SQL_AdaptionID(DBconn, AdaptionName):
-	strSelectSQL = "SELECT as_adaption.ID, as_adaption.adaption FROM as_adaption WHERE as_adaption.adaption = :v_adaption" 
-	id = ""
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"v_adaption": AdaptionName})
-		results = cursor.fetchall()
-	if not results:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_adaption (adaption) VALUES (:v_adaption)"
-			cursor.execute(strInsertSQL,  {"v_adaption": AdaptionName})
-			conn.commit()
-			print(cursor.rowcount, "Adaption record(s) added ( " + AdaptionName + " )" ) 
-			cursor.execute(strSelectSQL,  {"v_adaption": AdaptionName})
-			results = cursor.fetchall()
-
-	for row in results:
-		(id, name) = row		
-	
-	return(id)
-
-#----------------------------------------
-# get_SQL_TargetGroupID - good
-# <- Name of target group
-# -> number ID
-# get ID from target group name
-#----------------------------------------
-def get_SQL_TargetGroupID(DBconn, GroupName):
-	strSelectSQL = "SELECT as_targetgroup.ID, as_targetgroup.targetgroup FROM as_targetgroup WHERE as_targetgroup.targetgroup = :v_group" 
-	id = ""
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"v_group": GroupName})
-		results = cursor.fetchall()
-	if not results:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_targetgroup (targetgroup) VALUES (:v_group)"
-			cursor.execute(strInsertSQL,  {"v_group": GroupName})
-			conn.commit()
-			print(cursor.rowcount, "target group record(s) added ( " + GroupName + " )" ) 
-			cursor.execute(strSelectSQL,  {"v_group": GroupName})
-			results = cursor.fetchall()
-
-	for row in results:
-		(id, name) = row		
-	
-	return(id)
-
-
-# **************************************************************************
-# ********************* UPDATE FUNCTIONS ***********************************
-# **************************************************************************
-
-#----------------------------------------
-# set_SQL_update_infordetails - good
-#----------------------------------------
-def set_SQL_update_infordetails(DBconn, soup, vID_Anime):
-	results = ""
-	vTyp = ""
-	vEpisoden = ""
-	vVeroeffentlicht = ""
-	vHauptgenres = ""
-	vHerkunft = ""
-	vAdaptiert = ""
-	vZielgruppe = ""
-
-	infosD = parser.get_infodetails(soup)
-	
-	if 'Typ' 			in infosD: vTyp =         get_SQL_TypeID(DBconn, infosD['Typ'])
-	if 'Veröffentlicht' in infosD: vPubDate = 	infosD['Veröffentlicht']
-	if 'Hauptgenres' 	in infosD: vGenre = get_SQL_GenreID(DBconn, infosD['Hauptgenres'])
-	if 'Herkunft' 		in infosD: vOrigin =    get_SQL_originID(DBconn, infosD['Herkunft'])
-	if 'Adaptiert von'	in infosD: vAdapt =     get_SQL_AdaptionID(DBconn, infosD['Adaptiert von'])
-	if 'Zielgruppe' 	in infosD: vGroup = 	get_SQL_TargetGroupID(DBconn, infosD['Zielgruppe'])
-	if 'Episoden' 		in infosD: 
-		strEpisoden = infosD['Episoden']
-		x = re.findall("~[0-9]*min", strEpisoden)
-		y = re.findall("[0-9]* ", strEpisoden)
-		vEpisoden_length = x[0]
-		vEpisoden_Nr = y[0].strip()
-	
-
-	#Check IF anime has already Content 
-	strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :v_ID"
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"v_ID": vID_Anime})
-		results = cursor.fetchall()
-
-		
-	# If NOT insert - else CONTENT update
-	if not results:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_anime (ID, episodesnumber, length , publicationdate, fs_as_genre, fs_as_type, fs_as_origin, fs_as_adaption, fs_as_targetgroup) VALUES (:xID, :xepisNR, :xlength , :xpubdate, :xgenre, :xtype, :xorigin, :xadaption, :xtargetgroup)"
-			cursor.execute(strInsertSQL,  {"xID": vID_Anime, "xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup})
-			conn.commit()
-			print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anime + ": infordetails") 
-	else:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strUpdatetSQL = "UPDATE as_anime SET episodesnumber=:xepisNR, length=:xlength , publicationdate=:xpubdate, fs_as_genre=:xgenre, fs_as_type=:xtype, fs_as_origin=:xorigin, fs_as_adaption=:xadaption, fs_as_targetgroup=:xtargetgroup WHERE as_anime.ID = :xID"
-			cursor.execute(strUpdatetSQL,  {"xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup, "xID": vID_Anime})
-			conn.commit()
-			print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anime + ": infordetails" ) 	
-	
-	return("Done")	
-
-#----------------------------------------
-# set_SQL_update_description - good
-#----------------------------------------
-def set_SQL_update_description(DBconn, soup, vID_Anime):
-	description_de = ""
-	description_en = ""
-
-	
-	infosD = parser.get_description(soup)
-
-	if 'en' in infosD: description_en = infosD['en']
-	if 'de' in infosD: description_de = infosD['de']
-	
-	
-	#Check IF anime has already Content 
-	strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :xID"
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"xID": vID_Anime})
-		results = cursor.fetchall()
-
-		
-	# If NOT insert - else CONTENT update
-	if not results:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_anime (ID, description_en, description_de) VALUES (:xID, :xDE, :xEN)"
-			cursor.execute(strInsertSQL,  {"xID": vID_Anime, "xDE": description_de, "xEN": description_en })
-			conn.commit()
-			print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anime + ": description") 
-	else:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strUpdatetSQL = "UPDATE as_anime SET description_en=:xEN, description_de=:xDE  WHERE as_anime.ID = :xID"
-			cursor.execute(strUpdatetSQL,  {"xID": vID_Anime, "xDE": description_de, "xEN": description_en })
-			conn.commit()
-			print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anime + ": description" ) 
-		
-	return("Done")
-
-
-
-#----------------------------------------
-# set_SQL_update_animename - good
-# string
-#----------------------------------------
-def set_SQL_update_animename(DBconn, soup, vID_Anime):
-	animename_de = ""
-	animename_en = ""
-	animename_ja = ""
-
-	infosD = parser.get_animename(soup)
-
-	if 'en' in infosD: animename_en = infosD['en']
-	if 'de' in infosD: animename_de = infosD['de']
-	if 'ja' in infosD: animename_ja = infosD['ja']
-	
-	
-	#Check IF anime has already Content 
-	strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :xID"
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"xID": vID_Anime})
-		results = cursor.fetchall()
-
-		
-	# If NOT insert - else CONTENT update
-	if not results:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_anime (ID, name_de, name_en, name_ja) VALUES (:xID, :xDE, :xEN, :xJA)"
-			cursor.execute(strInsertSQL,  {"xID": vID_Anime, "xDE": animename_de, "xEN": animename_en, "xJA": animename_ja })
-			conn.commit()
-			print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anime + ": animename") 
-	else:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strUpdatetSQL = "UPDATE as_anime SET name_en=:xEN, name_de=:xDE, name_ja=:xJA  WHERE as_anime.ID = :xID"
-			cursor.execute(strUpdatetSQL,  {"xID": vID_Anime, "xDE": animename_de, "xEN": animename_en, "xJA": animename_ja })
-			conn.commit()
-			print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anime + ": animename")
-	
-	return("done")
-
-#----------------------------------------
-# set_SQL_update_rating - good
-# string
-#----------------------------------------
-def set_SQL_update_rating(DBconn, soup, vID_Anime):
-	rating_per = ""
-	rating_val = ""
-	infosD = parser.get_rating(soup)
-	rating_val = infosD[0]
-	rating_per = infosD[1]
-	
-	
-	#Check IF anime has already Content 
-	strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :xID"
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL, {"xID": vID_Anime})
-		results = cursor.fetchall()
-
-		
-	# If NOT insert - else CONTENT update
-	if not results:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strInsertSQL = "INSERT INTO as_anime (ID, rating_number, rating_percent) VALUES (:xID, :xNR, :xPE)"
-			cursor.execute(strInsertSQL,  {"xID": vID_Anime, "xNR": rating_val, "xPE": rating_per })
-			conn.commit()
-			print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anime + ": rating") 
-	else:
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			strUpdatetSQL = "UPDATE as_anime SET rating_number=:xNR, rating_percent=:xPE  WHERE as_anime.ID = :xID"
-			cursor.execute(strUpdatetSQL,  {"xID": vID_Anime, "xNR": rating_val, "xPE": rating_per })
-			conn.commit()
-			print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anime + ": rating")
 			
-	return(0)
+		# If NOT insert - else CONTENT update
+		if not results:
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				strInsertSQL = "INSERT INTO as_anime (ID, episodesnumber, length , publicationdate, fs_as_genre, fs_as_type, fs_as_origin, fs_as_adaption, fs_as_targetgroup) VALUES (:xID, :xepisNR, :xlength , :xpubdate, :xgenre, :xtype, :xorigin, :xadaption, :xtargetgroup)"
+				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup})
+				conn.commit()
+				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": infordetails") 
+		else:
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				strUpdatetSQL = "UPDATE as_anime SET episodesnumber=:xepisNR, length=:xlength , publicationdate=:xpubdate, fs_as_genre=:xgenre, fs_as_type=:xtype, fs_as_origin=:xorigin, fs_as_adaption=:xadaption, fs_as_targetgroup=:xtargetgroup WHERE as_anime.ID = :xID"
+				cursor.execute(strUpdatetSQL,  {"xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup, "xID": vID_Anisearch})
+				conn.commit()
+				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": infordetails" ) 	
+		
+		return("Done")	
 
-#----------------------------------------
-# set_SQL_update_relations  XXXXXXXXXXXXXXXXXXXX
-# string
-#----------------------------------------
-def set_SQL_update_relations(DBconn, soup, vID_Anime):
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_description
+	# - update description of the anime from anisearch
+	# in:  DB connention, html raw, anisearch Id
+	#----------------------------------------
+	def __set_SQL_update_description(DBconn, soup, vID_Anisearch):
+		description_de = ""
+		description_en = ""
+
+		
+		infosD = parser.get_description(soup)
+
+		if 'en' in infosD: description_en = infosD['en']
+		if 'de' in infosD: description_de = infosD['de']
+		
+		
+		#Check IF anime has already Content 
+		strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :xID"
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			cursor.execute(strSelectSQL, {"xID": vID_Anisearch})
+			results = cursor.fetchall()
+
+			
+		# If NOT insert - else CONTENT update
+		if not results:
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				strInsertSQL = "INSERT INTO as_anime (ID, description_en, description_de) VALUES (:xID, :xDE, :xEN)"
+				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
+				conn.commit()
+				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": description") 
+		else:
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				strUpdatetSQL = "UPDATE as_anime SET description_en=:xEN, description_de=:xDE  WHERE as_anime.ID = :xID"
+				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
+				conn.commit()
+				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": description" ) 
+			
+		return("Done")
+
+
+
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_animename
+	# - update anime name of the anime from anisearch
+	# in:  DB connention, html raw, anisearch Id
+	#----------------------------------------
+	def __set_SQL_update_animename(DBconn, soup, vID_Anisearch):
+		animename_de = ""
+		animename_en = ""
+		animename_ja = ""
+
+		infosD = parser.get_animename(soup)
+
+		if 'en' in infosD: animename_en = infosD['en']
+		if 'de' in infosD: animename_de = infosD['de']
+		if 'ja' in infosD: animename_ja = infosD['ja']
+		
+		
+		#Check IF anime has already Content 
+		strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :xID"
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			cursor.execute(strSelectSQL, {"xID": vID_Anisearch})
+			results = cursor.fetchall()
+
+			
+		# If NOT insert - else CONTENT update
+		if not results:
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				strInsertSQL = "INSERT INTO as_anime (ID, name_de, name_en, name_ja) VALUES (:xID, :xDE, :xEN, :xJA)"
+				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xDE": animename_de, "xEN": animename_en, "xJA": animename_ja })
+				conn.commit()
+				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": animename") 
+		else:
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				strUpdatetSQL = "UPDATE as_anime SET name_en=:xEN, name_de=:xDE, name_ja=:xJA  WHERE as_anime.ID = :xID"
+				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": animename_de, "xEN": animename_en, "xJA": animename_ja })
+				conn.commit()
+				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": animename")
+		
+		return("done")
+
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_rating
+	# - update rating of the anime from anisearch
+	# in:  DB connention, html raw, anisearch Id
+	#----------------------------------------
+	def __set_SQL_update_rating(DBconn, soup, vID_Anisearch):
+		rating_per = ""
+		rating_val = ""
+		infosD = parser.get_rating(soup)
+		rating_val = infosD[0]
+		rating_per = infosD[1]
+		
+		
+		#Check IF anime has already Content 
+		strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :xID"
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			cursor.execute(strSelectSQL, {"xID": vID_Anisearch})
+			results = cursor.fetchall()
+
+			
+		# If NOT insert - else CONTENT update
+		if not results:
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				strInsertSQL = "INSERT INTO as_anime (ID, rating_number, rating_percent) VALUES (:xID, :xNR, :xPE)"
+				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per })
+				conn.commit()
+				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": rating") 
+		else:
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				strUpdatetSQL = "UPDATE as_anime SET rating_number=:xNR, rating_percent=:xPE  WHERE as_anime.ID = :xID"
+				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per })
+				conn.commit()
+				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": rating")
+				
+		return()
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_anisearchPrimaryKey
+	# - update primary key of anisearch in the anime table after the update process is finished. After this is set, the anime will not shwon in the toDo list anymore
+	# in:  DB connection, anime ID, anisearch ID
+	#----------------------------------------
+	def __set_SQL_update_anisearchPrimaryKey(DBconn, vID_Anime, vID_Anisearch):
+
+		#Check IF anime has already Content 
+		strUpdatetSQL = "UPDATE anime SET fs_as_anime=:xAS_ID WHERE anime.ID = :xID"
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			cursor.execute(strUpdatetSQL, {"xAS_ID": vID_Anisearch, "xID": vID_Anime})
+			results = cursor.fetchall()
+
+		return()
+
+
+
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_relations  XXXXXXXXXXXXXXXXXXXX
+	# in:  DB connention, html raw, anisearch Id
+	#----------------------------------------
+	def __set_SQL_update_relations(DBconn, soup, vID_Anisearch):
+		
+		#infosD = parser.get_relations(soup)
+		infosD = [['4802', 'anime/4802,elfen-lied-regenschauer', 'Elfen Lied: Regenschauer', 'de', '[Nebengeschichte]', 1], ['1822', 'anime/1822,elfen-lied', 'Elfen Lied', 'de', '', 0]]
+		for relation in infosD:
+			h_ID = relation[0]
+			h_link = "https://www.anisearch.de/"  + relation[1]
+			h_lang =  relation[2]
+			h_rela =  relation[3]
+			h_zeig =  relation[4]
+
+			print(h_ID	)
+			print(h_link)	
+			print(h_lang)	
+			print(h_rela)
+			print(h_zeig)
+			
+			# Prüfe , ob es die Beziehung schon gibt  main -> to
+			# wenn nein anlegen
+			# wenn ja ändern ?? 
+
+		return()
+	
+	#['4802', 'anime/4802,elfen-lied-regenschauer', 'Elfen Lied: Regenschauer', 'de', '[Nebengeschichte]', 	1]
+	#['1822', 'anime/1822,elfen-lied', 				'Elfen Lied', 				'de', '', 					0]
+
+	#	"ID"				INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	#	"name"				TEXT,
+	#	"link"				TEXT,
+	#	"fs_as_anime_main"	INTEGER,
+	#	"relation"			TEXT,
+	#	"fs_as_anime_to"	INTEGER
 
 	
-	infosD = parser.get_relations(soup)
-	print(infosD)
-	return(0)
-	
-	
-	
 #----------------------------------------
-# set_SQL_update_nisearchPrimaryKey  XXXXXXXXXXXXXXXXXXXX
-# string
+# Date: 2021.07.05
+# Name: start_anisearSyncro
+# in:   DB connection
 #----------------------------------------
-def set_SQL_update_anisearchPrimaryKey(DBconn, link):
-	infosD = parser.get_anisearchPrimaryKey(link)
-	print(infosD)
-	return(0)
+def start_anisearSyncro(connection):
+	sq = set_sql_anime()
+	list_unsync_anime_anisearch = connectAnimeDB.get_SQL_unsyncList_anime_anisearch(connection)
+	vAS_Soup_rela = ""
+	vAS_NR = ""
+
+	for row in list_unsync_anime_anisearch:
+		(id, vAS_Link, name) = row
+				
+		vAS_Link = vAS_Link.lstrip("#")
+		vAS_Link = vAS_Link.rstrip("#")
+		
+		print("-----------------------------------")
+		print(vAS_Link)
+		
+		#vAS_Soup = openpage.get_webpage(vAS_Link)
+		#vAS_Link_rela = vAS_Link + "/relations"
+		#vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
+		#vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link)	
+		#
+		#sq.__set_SQL_update_infordetails(connection, vAS_Soup, vAS_NR)
+		#sq.__set_SQL_update_description(connection, vAS_Soup, vAS_NR)
+		#sq.__set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
+		#sq.__set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
+		sq.__set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
+		
+		#sq.__set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
+		
+		break
+	
+	return()		
+	
+# MAIN
+
+
+start_anisearSyncro(path_DB)
+
+
+
+
+
+
 
 
 
@@ -408,86 +354,46 @@ def set_SQL_update_anisearchPrimaryKey(DBconn, link):
 # Test
 #----------------------------------------
 def get_test_parser(connection):
-	animelink = "https://www.anisearch.de/anime/15898,vivy-fluorite-eyes-song"
-	animeSoup = openpage.get_webpage(animelink)
-	animelink_rela = animelink + "/relations"
-	print(animelink_rela)
-	animeSoup_rela = openpage.get_webpage(animelink_rela)
-	print(animeSoup_rela)
+	vAS_Link = "https://www.anisearch.de/anime/15898,vivy-fluorite-eyes-song"
+	vAS_Soup = openpage.get_webpage(vAS_Link)
+	vAS_Link_rela = vAS_Link + "/relations"
+	print(vAS_Link_rela)
+	vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
+	print(vAS_Soup_rela)
 	
-	if animeSoup != "":
-		animeInfosD = parser.get_infodetails(animeSoup)
-		animeDescrip = parser.get_description(animeSoup)
-		animeName = parser.get_animename(animeSoup)
-		animeRating = parser.get_rating(animeSoup)
-		animeNr = parser.get_anisearchPrimaryKey(animelink)
+	if vAS_Soup != "":
+		animeInfosD = parser.get_infodetails(vAS_Soup)
+		animeDescrip = parser.get_description(vAS_Soup)
+		animeName = parser.get_animename(vAS_Soup)
+		animeRating = parser.get_rating(vAS_Soup)
+		vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link)
 	else:
-		print ("animeSoup: no html")
+		print ("vAS_Soup: no html")
 		
-	if animeSoup_rela != "":
-		animeRelations = parser.get_relations(animeSoup_rela)
+	if vAS_Soup_rela != "":
+		animeRelations = parser.get_relations(vAS_Soup_rela)
 	else:
-		print("animeSoup_rela: no html")
+		print("vAS_Soup_rela: no html")
 	return()
 	
 def get_test_SQLids(connection):
-	result = get_SQL_unsyncList_anime_anisearch(connection) # good
+	result = connectAnimeDB.get_SQL_unsyncList_anime_anisearch(connection) # good
 	for rs in result:
 		print(rs)
-	result = get_SQL_GenreID(connection, "-") # good
+	result = connectAnimeDB.get_SQL_GenreID(connection, "-") # good
 	print(result)
-	result = get_SQL_TypeID(connection, "-") # good
+	result = connectAnimeDB.get_SQL_TypeID(connection, "-") # good
 	print(result)
-	result = get_SQL_originID(connection, "-") # good
+	result = connectAnimeDB.get_SQL_originID(connection, "-") # good
 	print(result)
-	result = get_SQL_AdaptionID(connection, "-") # good
+	result = connectAnimeDB.get_SQL_AdaptionID(connection, "-") # good
 	print(result)
-	result = get_SQL_TargetGroupID(connection, "-") # good
+	result = connectAnimeDB.get_SQL_TargetGroupID(connection, "-") # good
 	print(result)
 
 	
 	
 	return()
-	
-	
-#----------------------------------------
-# start_anisearSyncro
-#----------------------------------------
-def start_anisearSyncro(connection):
-
-	list_unsync_anime_anisearch = get_SQL_unsyncList_anime_anisearch(connection)
-
-	for row in list_unsync_anime_anisearch:
-		(id, animelink, name) = row
-				
-		animelink = animelink.lstrip("#")
-		animelink = animelink.rstrip("#")
-		
-		print("-----------------------------------")
-		print(animelink)
-		
-		animeSoup = openpage.get_webpage(animelink)
-		animelink_rela = animelink + "/relations"
-		animeSoup_rela = openpage.get_webpage(animelink_rela)
-		animeNr = parser.get_anisearchPrimaryKey(animelink)	
-
-		set_SQL_update_infordetails(connection, animeSoup, animeNr)
-		set_SQL_update_description(connection, animeSoup, animeNr)
-		set_SQL_update_animename(connection, animeSoup, animeNr)
-		set_SQL_update_rating(connection, animeSoup, animeNr)
-		set_SQL_update_relations(connection, animeSoup_rela, animeNr)
-		
-		break
-	
-	return()		
-	
-#variablen
-connection = "animeDB.db"
-start_anisearSyncro(connection)
-
-
-
-
 
 
 
