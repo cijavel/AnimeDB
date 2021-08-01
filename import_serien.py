@@ -59,65 +59,64 @@ def get_levenshtein_percent(string1, string2, kommastelle):
 		return ()
 
 #----------------------------------------
-# Date: 2021.07.07
-# Name: get_onlyName
-# - abstract anime name from folder name
+# Name: get_abstractAnimeNamefromDir
+# - abstract anime name from directory name
 #----------------------------------------
-def get_onlyName(name):
+def get_abstractAnimeNamefromDir(name):
 	if name:
 		name = re.sub('\[[a-zA-Z0-9_ .-]+\]', '', name)
 		
 	return name.rstrip(" ")
 	
 #----------------------------------------
-# Date: 2021.07.07
-# Name: get_folder
+# Name: get_subdirectories
 # - get folders from os path
 #----------------------------------------
-def get_folder(const_path_serienimport):
+def get_subdirectories(const_path_serienimport):
 	if const_path_serienimport:
-		folder = []
+		subdirectories = []
 		directory_contents = os.listdir(const_path_serienimport)
+
 		# get root path
 		if const_path_serienimport == ".":
 			path = os.getcwd()
 		else:
 			path = const_path_serienimport
 			
-		print(path)
+		# check if subfolder
 		for item in directory_contents:
 			if os.path.isdir(path + "\\" + "\\" + item) and item != const_importedDIR:
-				folder.append(item)
-		return (folder)
+				subdirectories.append(item)
+		return (subdirectories)
 	else:
-		print("get_folder - no path in config file")
+		print("get_subdirectories - no path in config file")
 		return ()
 
 
 #----------------------------------------
 # Date: 2021.07.07
-# Name: check_for_anime_in_DB
+# Name: check_levenshtein_for_anime_in_DB
 # - check if anime already in DB
 #----------------------------------------
-def check_for_anime_in_DB(DBconn):
-	anime = connectAnimeDB.get_SQL_all_animefoldername(DBconn)
-	folder = get_folder(const_path_serienimport)
+def check_levenshtein_for_anime_in_DB(DBconn):
+	all_animefoldername = connectAnimeDB.get_SQL_all_animefoldername(DBconn)
+	subdirectories = get_subdirectories(const_path_serienimport)
 	viewtable = []
 	i = 0
 	
-	if folder:
-		for fname in folder:
+	if subdirectories:
+		for fname in subdirectories:
 			iId2 = 0
 			iId1 = 0
 			aniName = ""
 			i = i + 1
-			for a in anime:
-				extractName = get_onlyName(fname)
-				iId = get_levenshtein_percent(get_onlyName(extractName), a[0], 2)
+			for singleAnime in all_animefoldername:
+				extractName = get_abstractAnimeNamefromDir(fname)
+				iId = get_levenshtein_percent(get_abstractAnimeNamefromDir(fname), singleAnime[0], 2)
 
 				if(iId2 < iId):
 					iId2 = iId
-					aniName = a[0]
+					aniName = singleAnime[0]
 			if iId2 > const_levenshtein_distance_percent:
 				viewtable.append([i, "*", str(iId2), fname, extractName,  aniName, ""])
 			else:
@@ -141,15 +140,14 @@ def check_for_anime_in_DB(DBconn):
 		
 		return(viewtable)
 	else:
-		print("check_for_anime_in_DB - there is no folder")
+		print("check_levenshtein_for_anime_in_DB - there is no folder")
 		return()
 
 #----------------------------------------
 # Date: 2021.07.10
-# Name: change_to_dict
-# - check if anime already in DB
+# Name: change_animelist_to_dict
 #----------------------------------------
-def change_to_dict(list_of_animes):
+def change_animelist_to_dict(list_of_animes):
 	header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
 	
 	dict = {}
@@ -165,7 +163,7 @@ def change_to_dict(list_of_animes):
 			dict["move"]	= i[6]
 			list.append(dict)
 	else:
-		print("change_to_dict - no list")
+		print("change_animelist_to_dict - no list")
 	return(list)
 
 
@@ -173,7 +171,7 @@ def change_to_dict(list_of_animes):
 
 #----------------------------------------
 # Date: 2021.07.07
-# Name: check_for_anime_in_DB
+# Name: insert_anime_in_DB
 # - check if anime already in DB
 #----------------------------------------
 def insert_anime_in_DB(DBconn, list_of_anime):
@@ -224,8 +222,8 @@ def moving_folder(list_of_anime):
 
 
 # MAIN
-list_of_animes = check_for_anime_in_DB(path_DB)
-dirct = change_to_dict(list_of_animes)
+list_of_compared_animes  = check_levenshtein_for_anime_in_DB(const_path_DB)
+dirct_of_anime = change_animelist_to_dict(list_of_compared_animes)
 moving_folder(dirct_of_anime)
 insert_anime_in_DB(const_path_DB, dirct_of_anime)
 
