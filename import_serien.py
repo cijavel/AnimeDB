@@ -194,11 +194,11 @@ def insert_anime_in_DB(DBconn, list_of_anime):
 	return()
 
 #----------------------------------------
-# Date: 2021.07.07
-# Name: moving_folder
+# Date: 2021.08.01
+# Name: move_folder_to_importedDIR
 # - move folder with dict
 #----------------------------------------
-def moving_folder(list_of_anime):
+def move_folder_to_importedDIR(list_of_anime):
 	if list_of_anime:
 		for h in list_of_anime:
 			folder = h["folder"]
@@ -209,7 +209,7 @@ def moving_folder(list_of_anime):
 				shutil.move(original,target)
 				print("move folder (" + folder + ") to " + const_importedDIR)
 	else:
-		print("moving_folder - no folder list")
+		print("move_folder_to_importedDIR - no folder list")
 	return()
 
 
@@ -217,7 +217,7 @@ def moving_folder(list_of_anime):
 # MAIN
 list_of_compared_animes  = check_levenshtein_for_anime_in_DB(const_path_DB)
 dirct_of_anime = change_animelist_to_dict(list_of_compared_animes)
-moving_folder(dirct_of_anime)
+move_folder_to_importedDIR(dirct_of_anime)
 insert_anime_in_DB(const_path_DB, dirct_of_anime)
 
 
