@@ -117,7 +117,7 @@ def check_levenshtein_for_anime_in_DB(DBconn):
 				if(iId2 < iId):
 					iId2 = iId
 					aniName = singleAnime[0]
-			if iId2 > const_levenshtein_distance_percent:
+			if iId2 > float(const_levenshtein_distance_percent):
 				viewtable.append([i, "*", str(iId2), fname, extractName,  aniName, ""])
 			else:
 				viewtable.append([i, "", str(iId2),  fname, extractName,  aniName, ""])
