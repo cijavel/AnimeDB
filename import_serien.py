@@ -155,18 +155,16 @@ def change_animelist_to_dict(list_of_animes):
 	if list_of_animes:
 		for i in list_of_animes:
 			dict = {}
-			dict["ID"] 		= i[0]
+			dict["ID"]      = i[0]
 			dict["prozent"] = i[2]
-			dict["folder"]	= i[3]
-			dict["search"]	= i[4]
-			dict["found"]	= i[5]
-			dict["move"]	= i[6]
+			dict["folder"]  = i[3]
+			dict["search"]  = i[4]
+			dict["found"]   = i[5]
+			dict["move"]    = i[6]
 			list.append(dict)
 	else:
 		print("change_animelist_to_dict - no list")
 	return(list)
-
-
 
 
 #----------------------------------------
@@ -193,9 +191,6 @@ def insert_anime_in_DB(DBconn, list_of_anime):
 				print("Add Anime (" + folder + ") to DB")
 	else:
 		print("insert_anime_in_DB - no folder list")
-
-
-
 	return()
 
 #----------------------------------------
@@ -219,22 +214,10 @@ def moving_folder(list_of_anime):
 
 
 
-
-
 # MAIN
 list_of_compared_animes  = check_levenshtein_for_anime_in_DB(const_path_DB)
 dirct_of_anime = change_animelist_to_dict(list_of_compared_animes)
 moving_folder(dirct_of_anime)
 insert_anime_in_DB(const_path_DB, dirct_of_anime)
-
-
-
-
-
-
-
-
-
-
 
 
