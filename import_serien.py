@@ -29,11 +29,12 @@ except ImportError:
 # Object
 
 config = confi.get_configfile()
-path_DB				= config.get_KeyValue("settings", "path_DB")
-path_serienimport 	= config.get_KeyValue("serienImport", "path_serienimport")
-first_language 		= config.get_KeyValue("serienImport", "first_language")
-storage 			= config.get_KeyValue("serienImport", "storage")
-subfolder			= config.get_KeyValue("serienImport", "subfolder")
+const_path_DB                           = config.get_KeyValue("settings", "path_DB")
+const_path_serienimport                 = config.get_KeyValue("serienImport", "path_serienimport")
+const_first_language                    = config.get_KeyValue("serienImport", "first_language")
+const_storage                           = config.get_KeyValue("serienImport", "storage")
+const_importedDIR                       = config.get_KeyValue("serienImport", "importedDIR")
+const_levenshtein_distance_percent      = config.get_KeyValue("serienImport", "levenshtein_distance_percent")
 
 connectAnimeDB = sqlAni.get_sql_anime()
 
@@ -58,81 +59,65 @@ def get_levenshtein_percent(string1, string2, kommastelle):
 		return ()
 
 #----------------------------------------
-# Date: 2021.07.07
-# Name: get_onlyName
-# - abstract anime name from folder name
+# Name: get_extractAnimeNamefromDir
+# - extract anime name from directory name
 #----------------------------------------
-def get_onlyName(name):
+def get_extractAnimeNamefromDir(name):
 	if name:
 		name = re.sub('\[[a-zA-Z0-9_ .-]+\]', '', name)
 		
 	return name.rstrip(" ")
 	
 #----------------------------------------
-# Date: 2021.07.07
-# Name: get_folder
+# Name: get_subdirectories
 # - get folders from os path
 #----------------------------------------
-def get_folder(path_serienimport):
-	if path_serienimport:
-		folder = []
-		directory_contents = os.listdir(path_serienimport)
-		if path_serienimport == ".":
+def get_subdirectories(const_path_serienimport):
+	if const_path_serienimport:
+		subdirectories = []
+		directory_contents = os.listdir(const_path_serienimport)
+
+		# get root path
+		if const_path_serienimport == ".":
 			path = os.getcwd()
 		else:
-			path = path_serienimport
+			path = const_path_serienimport
 			
-		print(path)
+		# check if subfolder
 		for item in directory_contents:
-			if os.path.isdir(path + "\\" + "\\" + item) and item != subfolder:
-				folder.append(item)
-		return (folder)
+			if os.path.isdir(path + "\\" + "\\" + item) and item != const_importedDIR:
+				subdirectories.append(item)
+		return (subdirectories)
 	else:
-		print("get_folder - no path in config file")
+		print("get_subdirectories - no path in config file")
 		return ()
 
 
 #----------------------------------------
 # Date: 2021.07.07
-# Name: get_anime_foldername
-# - get anime names from DB
-#----------------------------------------
-def get_anime_foldername(DBconn):
-	strSelectSQL = "SELECT foldername FROM anime" 
-	id = ""
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL)
-		results = cursor.fetchall()
-	return(results)
-
-
-#----------------------------------------
-# Date: 2021.07.07
-# Name: check_for_anime_in_DB
+# Name: check_levenshtein_for_anime_in_DB
 # - check if anime already in DB
 #----------------------------------------
-def check_for_anime_in_DB(DBconn):
-	anime = get_anime_foldername(DBconn)
-	folder = get_folder(path_serienimport)
+def check_levenshtein_for_anime_in_DB(DBconn):
+	all_animefoldername = connectAnimeDB.get_SQL_all_animefoldername(DBconn)
+	subdirectories = get_subdirectories(const_path_serienimport)
 	viewtable = []
 	i = 0
 	
-	if folder:
-		for fname in folder:
+	if subdirectories:
+		for fname in subdirectories:
 			iId2 = 0
 			iId1 = 0
 			aniName = ""
 			i = i + 1
-			for a in anime:
-				extractName = get_onlyName(fname)
-				iId = get_levenshtein_percent(get_onlyName(extractName), a[0], 2)
+			for singleAnime in all_animefoldername:
+				extractName = get_extractAnimeNamefromDir(fname)
+				iId = get_levenshtein_percent(get_extractAnimeNamefromDir(fname), singleAnime[0], 2)
 
 				if(iId2 < iId):
 					iId2 = iId
-					aniName = a[0]
-			if iId2 > 80:
+					aniName = singleAnime[0]
+			if iId2 > float(const_levenshtein_distance_percent):
 				viewtable.append([i, "*", str(iId2), fname, extractName,  aniName, ""])
 			else:
 				viewtable.append([i, "", str(iId2),  fname, extractName,  aniName, ""])
@@ -150,20 +135,19 @@ def check_for_anime_in_DB(DBconn):
 			header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
 			termtables.print( a, header=header,  style="               ")
 			print("")
-			eingabe = input("don't move ?  ")
+			eingabe = input("move? [y/N]: ")
 			h[6] = eingabe
 		
 		return(viewtable)
 	else:
-		print("check_for_anime_in_DB - there is no folder")
+		print("check_levenshtein_for_anime_in_DB - there is no folder")
 		return()
 
 #----------------------------------------
 # Date: 2021.07.10
-# Name: change_to_dict
-# - check if anime already in DB
+# Name: change_animelist_to_dict
 #----------------------------------------
-def change_to_dict(list_of_animes):
+def change_animelist_to_dict(list_of_animes):
 	header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
 	
 	dict = {}
@@ -179,7 +163,7 @@ def change_to_dict(list_of_animes):
 			dict["move"]	= i[6]
 			list.append(dict)
 	else:
-		print("change_to_dict - no list")
+		print("change_animelist_to_dict - no list")
 	return(list)
 
 
@@ -187,14 +171,14 @@ def change_to_dict(list_of_animes):
 
 #----------------------------------------
 # Date: 2021.07.07
-# Name: check_for_anime_in_DB
+# Name: insert_anime_in_DB
 # - check if anime already in DB
 #----------------------------------------
 def insert_anime_in_DB(DBconn, list_of_anime):
 	conn = sqlite3.connect(DBconn)
 	todayformat = date.today().strftime("%d.%m.%Y")
-	storageID = connectAnimeDB.get_SQL_StorageID(path_DB, storage)
-	first_languageID  = connectAnimeDB.get_SQL_spracheID(path_DB, first_language)
+	storageID = connectAnimeDB.get_SQL_StorageID(const_path_DB, const_storage )
+	first_languageID  = connectAnimeDB.get_SQL_spracheID(const_path_DB, const_first_language)
 
 	if list_of_anime:
 		for a in list_of_anime:
@@ -225,10 +209,10 @@ def moving_folder(list_of_anime):
 			folder = h["folder"]
 			mov = h["move"]
 			if mov =="y":
-				original = path_serienimport  + "\\" + folder
-				target = path_serienimport + "\\" + subfolder + "\\" + folder
+				original = const_path_serienimport  + "\\" + folder
+				target = const_path_serienimport + "\\" + const_importedDIR + "\\" + folder
 				shutil.move(original,target)
-				print("move folder (" + folder + ") to " + subfolder)
+				print("move folder (" + folder + ") to " + const_importedDIR)
 	else:
 		print("moving_folder - no folder list")
 	return()
@@ -238,10 +222,10 @@ def moving_folder(list_of_anime):
 
 
 # MAIN
-list_of_animes = check_for_anime_in_DB(path_DB)
-dirct = change_to_dict(list_of_animes)
-moving_folder(dirct)
-insert_anime_in_DB(path_DB, dirct)
+list_of_compared_animes  = check_levenshtein_for_anime_in_DB(const_path_DB)
+dirct_of_anime = change_animelist_to_dict(list_of_compared_animes)
+moving_folder(dirct_of_anime)
+insert_anime_in_DB(const_path_DB, dirct_of_anime)
 
 
 

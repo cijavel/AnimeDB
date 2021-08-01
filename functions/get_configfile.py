@@ -44,14 +44,18 @@ class get_configfile:
 		
 
 	#----------------------------------------
-	# Date: 2021.07.05
 	# Name: create_defaultconfiguration
 	# - create a default config files
 	#----------------------------------------
 	def create_defaultconfiguration(self):
 		config = configparser.ConfigParser()
 		config['settings']={'path_DB':'animeDB.db'}
-		config['serienImport']={'path_serienimport':'.', 'subfolder':'-imported-', 'first_language':'GerSub', 'storage':'NAS'}
+		config['serienImport'] = {
+			'path_serienimport':'.',
+			'importedDIR':'-imported-',
+			'levenshtein_distance_percent':'80',
+			'first_language':'GerSub',
+			'storage':'NAS'}
 		with open(file, 'w') as get_configfile:
 			config.write(get_configfile)
 		return ()
