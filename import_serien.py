@@ -195,21 +195,21 @@ def insert_anime_in_DB(DBconn, list_of_anime):
 
 #----------------------------------------
 # Date: 2021.08.01
-# Name: move_folder_to_importedDIR
-# - move folder with dict
+# Name: move_dir_to_importedDIR
+# - move a list of dir to the importedDIR. Only if value of the key 'move' = y
 #----------------------------------------
-def move_folder_to_importedDIR(list_of_anime):
-	if list_of_anime:
-		for h in list_of_anime:
-			folder = h["folder"]
-			mov = h["move"]
+def move_dir_to_importedDIR(list_of_dirs):
+	if list_of_dirs:
+		for singleDir in list_of_dirs:
+			dirName = singleDir["folder"]
+			mov    = singleDir["move"]
 			if mov =="y":
-				original = const_path_serienimport  + "\\" + folder
-				target = const_path_serienimport + "\\" + const_importedDIR + "\\" + folder
+				original = const_path_serienimport + "\\" + dirName
+				target   = const_path_serienimport + "\\" + const_importedDIR + "\\" + dirName
 				shutil.move(original,target)
-				print("move folder (" + folder + ") to " + const_importedDIR)
+				print("move directory (" + dirName + ") to " + const_importedDIR)
 	else:
-		print("move_folder_to_importedDIR - no folder list")
+		print("move_dir_to_importedDIR - no directory list")
 	return()
 
 
@@ -217,7 +217,7 @@ def move_folder_to_importedDIR(list_of_anime):
 # MAIN
 list_of_compared_animes  = check_levenshtein_for_anime_in_DB(const_path_DB)
 dirct_of_anime = change_animelist_to_dict(list_of_compared_animes)
-move_folder_to_importedDIR(dirct_of_anime)
+move_dir_to_importedDIR(dirct_of_anime)
 insert_anime_in_DB(const_path_DB, dirct_of_anime)
 
 
