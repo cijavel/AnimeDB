@@ -29,10 +29,10 @@ except ImportError:
 # Object
 
 config = confi.get_configfile()
-path_DB				= config.get_KeyValue("settings", "path_DB")
-path_serienimport 	= config.get_KeyValue("serienImport", "path_serienimport")
-first_language 		= config.get_KeyValue("serienImport", "first_language")
-storage 			= config.get_KeyValue("serienImport", "storage")
+const_path_DB                           = config.get_KeyValue("settings", "path_DB")
+const_path_serienimport                 = config.get_KeyValue("serienImport", "path_serienimport")
+const_first_language                    = config.get_KeyValue("serienImport", "first_language")
+const_storage                           = config.get_KeyValue("serienImport", "storage")
 const_importedDIR                       = config.get_KeyValue("serienImport", "importedDIR")
 const_levenshtein_distance_percent      = config.get_KeyValue("serienImport", "levenshtein_distance_percent")
 
@@ -74,14 +74,15 @@ def get_onlyName(name):
 # Name: get_folder
 # - get folders from os path
 #----------------------------------------
-def get_folder(path_serienimport):
-	if path_serienimport:
+def get_folder(const_path_serienimport):
+	if const_path_serienimport:
 		folder = []
-		directory_contents = os.listdir(path_serienimport)
-		if path_serienimport == ".":
+		directory_contents = os.listdir(const_path_serienimport)
+		# get root path
+		if const_path_serienimport == ".":
 			path = os.getcwd()
 		else:
-			path = path_serienimport
+			path = const_path_serienimport
 			
 		print(path)
 		for item in directory_contents:
@@ -100,7 +101,7 @@ def get_folder(path_serienimport):
 #----------------------------------------
 def check_for_anime_in_DB(DBconn):
 	anime = connectAnimeDB.get_SQL_all_animefoldername(DBconn)
-	folder = get_folder(path_serienimport)
+	folder = get_folder(const_path_serienimport)
 	viewtable = []
 	i = 0
 	
@@ -178,8 +179,8 @@ def change_to_dict(list_of_animes):
 def insert_anime_in_DB(DBconn, list_of_anime):
 	conn = sqlite3.connect(DBconn)
 	todayformat = date.today().strftime("%d.%m.%Y")
-	storageID = connectAnimeDB.get_SQL_StorageID(path_DB, storage)
-	first_languageID  = connectAnimeDB.get_SQL_spracheID(path_DB, first_language)
+	storageID = connectAnimeDB.get_SQL_StorageID(const_path_DB, const_storage )
+	first_languageID  = connectAnimeDB.get_SQL_spracheID(const_path_DB, const_first_language)
 
 	if list_of_anime:
 		for a in list_of_anime:
@@ -210,8 +211,8 @@ def moving_folder(list_of_anime):
 			folder = h["folder"]
 			mov = h["move"]
 			if mov =="y":
-				original = path_serienimport  + "\\" + folder
-				target = path_serienimport + "\\" + const_importedDIR + "\\" + folder
+				original = const_path_serienimport  + "\\" + folder
+				target = const_path_serienimport + "\\" + const_importedDIR + "\\" + folder
 				shutil.move(original,target)
 				print("move folder (" + folder + ") to " + const_importedDIR)
 	else:
@@ -225,8 +226,8 @@ def moving_folder(list_of_anime):
 # MAIN
 list_of_animes = check_for_anime_in_DB(path_DB)
 dirct = change_to_dict(list_of_animes)
-moving_folder(dirct)
-insert_anime_in_DB(path_DB, dirct)
+moving_folder(dirct_of_anime)
+insert_anime_in_DB(const_path_DB, dirct_of_anime)
 
 
 
