@@ -106,21 +106,21 @@ def check_levenshtein_for_anime_in_DB(DBconn):
 	
 	if subdirectories:
 		for fname in subdirectories:
-			iId2 = 0
-			iId1 = 0
+			iDistanceCache01 = 0
+			iDistanceCache02 = 0
 			aniName = ""
 			i = i + 1
 			for singleAnime in all_animefoldername:
 				extractName = get_extractAnimeNamefromDir(fname)
-				iId = get_levenshtein_percent(get_extractAnimeNamefromDir(fname), singleAnime[0], 2)
+				iDistanceCache02 = get_levenshtein_percent(get_extractAnimeNamefromDir(fname), singleAnime[0], 2)
 
-				if(iId2 < iId):
-					iId2 = iId
+				if(iDistanceCache01 < iDistanceCache02):
+					iDistanceCache01 = iDistanceCache02
 					aniName = singleAnime[0]
-			if iId2 > float(const_levenshtein_distance_percent):
-				viewtable.append([i, "*", str(iId2), fname, extractName,  aniName, ""])
+			if iDistanceCache01 > float(const_levenshtein_distance_percent):
+				viewtable.append([i, "*", str(iDistanceCache01), fname, extractName,  aniName, ""])
 			else:
-				viewtable.append([i, "", str(iId2),  fname, extractName,  aniName, ""])
+				viewtable.append([i, "", str(iDistanceCache01),  fname, extractName,  aniName, ""])
 			
 		header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
 		termtables.print( viewtable, header=header,  style="            -  ")
