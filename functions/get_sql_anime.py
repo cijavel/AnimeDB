@@ -30,6 +30,30 @@ class get_sql_anime:
 	
 	#----------------------------------------
 	# Date: 2021.07.05
+	# Name: get_SQL_unsync_anime_anisearch
+	# - get the list of anime, which hasn't syncronized with anisearch jet - toDo List ;)
+	# in:  DB connention
+	# out: list of unsync animes
+	#----------------------------------------
+	def get_SQL_unsyncList_anime_anisearch(self, DBconn):
+		strSQL = 'SELECT anime.ID, anime.anisearch_link, anime.foldername FROM anime WHERE (((anime.fs_as_anime IS NULL OR anime.fs_as_anime ="")) AND (anime.anisearch_link IS NOT NULL))'
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			cursor.execute(strSQL)
+			results = cursor.fetchall()
+		return(results)
+
+
+
+
+	# **************************************************************************
+	# ********************* get ID of value from database **********************
+	# **************************************************************************
+
+
+	#----------------------------------------
+	# Date: 2021.07.05
 	# Name: get_SQL_StorageID
 	#----------------------------------------
 	def get_SQL_StorageID(self, DBconn, storageName):
@@ -86,28 +110,9 @@ class get_sql_anime:
 			for row in results:
 				(id, name) = row	
 		
-		return(id)		
-		
-	#----------------------------------------
-	# Date: 2021.07.05
-	# Name: get_SQL_unsync_anime_anisearch
-	# - get the list of anime, which hasn't syncronized with anisearch jet - toDo List ;)
-	# in:  DB connention
-	# out: list of unsync animes
-	#----------------------------------------
-	def get_SQL_unsyncList_anime_anisearch(self, DBconn):
-		strSQL = 'SELECT anime.ID, anime.anisearch_link, anime.foldername FROM anime WHERE (((anime.fs_as_anime IS NULL OR anime.fs_as_anime ="")) AND (anime.anisearch_link IS NOT NULL))'
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			cursor.execute(strSQL)
-			results = cursor.fetchall()
-		return(results)
+		return(id)
 
 
-	# **************************************************************************
-	# ********************* get Number for DB **********************************
-	# **************************************************************************
 
 	#----------------------------------------
 	# Date: 2021.07.05
