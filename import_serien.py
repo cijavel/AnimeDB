@@ -34,6 +34,7 @@ path_serienimport 	= config.get_KeyValue("serienImport", "path_serienimport")
 first_language 		= config.get_KeyValue("serienImport", "first_language")
 storage 			= config.get_KeyValue("serienImport", "storage")
 const_importedDIR                       = config.get_KeyValue("serienImport", "importedDIR")
+const_levenshtein_distance_percent      = config.get_KeyValue("serienImport", "levenshtein_distance_percent")
 
 connectAnimeDB = sqlAni.get_sql_anime()
 
@@ -116,7 +117,7 @@ def check_for_anime_in_DB(DBconn):
 				if(iId2 < iId):
 					iId2 = iId
 					aniName = a[0]
-			if iId2 > 80:
+			if iId2 > const_levenshtein_distance_percent:
 				viewtable.append([i, "*", str(iId2), fname, extractName,  aniName, ""])
 			else:
 				viewtable.append([i, "", str(iId2),  fname, extractName,  aniName, ""])

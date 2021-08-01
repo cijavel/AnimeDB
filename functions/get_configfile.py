@@ -53,6 +53,7 @@ class get_configfile:
 		config['serienImport'] = {
 			'path_serienimport':'.',
 			'importedDIR':'-imported-',
+			'levenshtein_distance_percent':'80',
 			'first_language':'GerSub',
 			'storage':'NAS'}
 		with open(file, 'w') as get_configfile:
