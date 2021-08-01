@@ -59,10 +59,10 @@ def get_levenshtein_percent(string1, string2, kommastelle):
 		return ()
 
 #----------------------------------------
-# Name: get_abstractAnimeNamefromDir
-# - abstract anime name from directory name
+# Name: get_extractAnimeNamefromDir
+# - extract anime name from directory name
 #----------------------------------------
-def get_abstractAnimeNamefromDir(name):
+def get_extractAnimeNamefromDir(name):
 	if name:
 		name = re.sub('\[[a-zA-Z0-9_ .-]+\]', '', name)
 		
@@ -111,8 +111,8 @@ def check_levenshtein_for_anime_in_DB(DBconn):
 			aniName = ""
 			i = i + 1
 			for singleAnime in all_animefoldername:
-				extractName = get_abstractAnimeNamefromDir(fname)
-				iId = get_levenshtein_percent(get_abstractAnimeNamefromDir(fname), singleAnime[0], 2)
+				extractName = get_extractAnimeNamefromDir(fname)
+				iId = get_levenshtein_percent(get_extractAnimeNamefromDir(fname), singleAnime[0], 2)
 
 				if(iId2 < iId):
 					iId2 = iId
