@@ -94,27 +94,11 @@ def get_folder(path_serienimport):
 
 #----------------------------------------
 # Date: 2021.07.07
-# Name: get_anime_foldername
-# - get anime names from DB
-#----------------------------------------
-def get_anime_foldername(DBconn):
-	strSelectSQL = "SELECT foldername FROM anime" 
-	id = ""
-	conn = sqlite3.connect(DBconn)
-	with conn:
-		cursor = conn.cursor()
-		cursor.execute(strSelectSQL)
-		results = cursor.fetchall()
-	return(results)
-
-
-#----------------------------------------
-# Date: 2021.07.07
 # Name: check_for_anime_in_DB
 # - check if anime already in DB
 #----------------------------------------
 def check_for_anime_in_DB(DBconn):
-	anime = get_anime_foldername(DBconn)
+	anime = connectAnimeDB.get_SQL_all_animefoldername(DBconn)
 	folder = get_folder(path_serienimport)
 	viewtable = []
 	i = 0

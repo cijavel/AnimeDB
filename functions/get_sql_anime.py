@@ -10,6 +10,24 @@ import sqlite3
 
 
 class get_sql_anime:
+
+
+	#----------------------------------------
+	# Date: 2021.07.31
+	# Name: get_SQL_all_animefoldername
+	# - get anime names from DB
+	#----------------------------------------
+	def get_SQL_all_animefoldername(self, DBconn):
+		strSelectSQL = "SELECT foldername FROM anime" 
+		id = ""
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			cursor.execute(strSelectSQL)
+			results = cursor.fetchall()
+		return(results)
+
+	
 	#----------------------------------------
 	# Date: 2021.07.05
 	# Name: get_SQL_StorageID
