@@ -1,17 +1,21 @@
+'''
+Created on 05.07.2021
+@author: Ci
+'''
 import requests
 from bs4 import BeautifulSoup
 import re
 
 class webparser_anisearch:
 	#----------------------------------------
-	# infodetails
-	# table
+	# Date: 2021.07.05
+	# Name: get_infodetails
+	# - parse infodetails of anime from html source
 	#----------------------------------------
 	def get_infodetails(self, soup):
 		skey = ""
 		sValue = ""
 		infodetails = {}
-
 
 		details = soup.find(id='infodetails')
 		if details:
@@ -25,8 +29,10 @@ class webparser_anisearch:
 		return infodetails
 		
 	#----------------------------------------	
-	# Description
-	# lang, descipt
+	# Date: 2021.07.05
+	# Name: get_description
+	# - parse description from html source
+	# out: list (lang, descipt)
 	#----------------------------------------
 	def get_description(self, soup):
 		werte = {}
@@ -49,8 +55,10 @@ class webparser_anisearch:
 		return werte
 		
 	#----------------------------------------
-	# AnimeName Anisearch
-	# lang, name
+	# Date: 2021.07.05
+	# Name: get_animename
+	# - parse animename from html source
+	# out: animename
 	#----------------------------------------
 	def get_animename(self, soup):
 
@@ -70,8 +78,10 @@ class webparser_anisearch:
 		return animeName
 	
 	#----------------------------------------
-	# Rating Anisearch
-	# number, procent
+	# Date: 2021.07.05
+	# Name: get_rating
+	# - parse rating from html source
+	# out: list (number, procent)
 	#----------------------------------------
 	def get_rating(self, soup):
 		rating = soup.find(id='ratingstats')
@@ -87,7 +97,10 @@ class webparser_anisearch:
 		return daten
 
 	#----------------------------------------
-	# relation Anisearch
+	# Date: 2021.07.05
+	# Name: get_relations
+	# - parse relation from html source
+	# out: list (number, link, name,lang, rel_descrip , rel_direct)
 	#----------------------------------------
 	def get_relations(self, soup):
 		
@@ -123,18 +136,22 @@ class webparser_anisearch:
 
 		return relationlist
 	#----------------------------------------
-	# PrimaryKey Anisearch
-	# ID
+	# Date: 2021.07.05
+	# Name: PrimaryKey Anisearch - good
+	# - get PrimaryKey from anisearch web link
+	# in:  anisearch web link for anime
+	# out: PrimaryKey from anisearch weblink
 	#----------------------------------------
 	def get_anisearchPrimaryKey(self, link):
 		number = ""
-		try:
-			p = re.compile(r'\/\d+')
-			get_animeNumber= p.findall(link)
-			number = get_animeNumber[0]
-			number = number.replace("/", "")
-		except:
-			print("ERROR - get_anisearchPrimaryKey - please check link: " + link )
+		if link:
+			try:
+				p = re.compile(r'\/\d+')
+				get_animeNumber= p.findall(link)
+				number = get_animeNumber[0]
+				number = number.replace("/", "")
+			except:
+				print("ERROR - get_anisearchPrimaryKey - please check link: " + link )
 			
 		return number
 
@@ -142,7 +159,10 @@ class webparser_anisearch:
 
 class open_webpage:
 	#----------------------------------------
-	# webseite aufrufen
+	# Date: 2021.07.05
+	# Name: get_webpage
+	# - get html source from Internet
+	# out: html source
 	#----------------------------------------
 	def get_webpage(self, link):
 		soup = "no html"

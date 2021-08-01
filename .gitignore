@@ -1,3 +1,6 @@
 *.accdb
 *.mdb
 *.dsn
+*.db
+*.pyc
+*/__pycache__
