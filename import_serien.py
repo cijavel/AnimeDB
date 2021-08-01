@@ -72,7 +72,7 @@ def get_extractAnimeNamefromDir(name):
 # Name: get_subdirectories
 # - get folders from os path
 #----------------------------------------
-def get_subdirectories(const_path_serienimport):
+def get_subdirectories():
 	if const_path_serienimport:
 		subdirectories = []
 		directory_contents = os.listdir(const_path_serienimport)
@@ -100,7 +100,7 @@ def get_subdirectories(const_path_serienimport):
 #----------------------------------------
 def check_levenshtein_for_anime_in_DB(DBconn):
 	all_animefoldername = connectAnimeDB.get_SQL_all_animefoldername(DBconn)
-	subdirectories = get_subdirectories(const_path_serienimport)
+	subdirectories = get_subdirectories()
 	viewtable = []
 	i = 0
 	
