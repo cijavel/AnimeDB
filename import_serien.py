@@ -33,7 +33,7 @@ path_DB				= config.get_KeyValue("settings", "path_DB")
 path_serienimport 	= config.get_KeyValue("serienImport", "path_serienimport")
 first_language 		= config.get_KeyValue("serienImport", "first_language")
 storage 			= config.get_KeyValue("serienImport", "storage")
-subfolder			= config.get_KeyValue("serienImport", "subfolder")
+const_importedDIR                       = config.get_KeyValue("serienImport", "importedDIR")
 
 connectAnimeDB = sqlAni.get_sql_anime()
 
@@ -84,7 +84,7 @@ def get_folder(path_serienimport):
 			
 		print(path)
 		for item in directory_contents:
-			if os.path.isdir(path + "\\" + "\\" + item) and item != subfolder:
+			if os.path.isdir(path + "\\" + "\\" + item) and item != const_importedDIR:
 				folder.append(item)
 		return (folder)
 	else:
@@ -210,9 +210,9 @@ def moving_folder(list_of_anime):
 			mov = h["move"]
 			if mov =="y":
 				original = path_serienimport  + "\\" + folder
-				target = path_serienimport + "\\" + subfolder + "\\" + folder
+				target = path_serienimport + "\\" + const_importedDIR + "\\" + folder
 				shutil.move(original,target)
-				print("move folder (" + folder + ") to " + subfolder)
+				print("move folder (" + folder + ") to " + const_importedDIR)
 	else:
 		print("moving_folder - no folder list")
 	return()
