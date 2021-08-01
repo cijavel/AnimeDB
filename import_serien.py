@@ -135,7 +135,7 @@ def check_levenshtein_for_anime_in_DB(DBconn):
 			header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
 			termtables.print( a, header=header,  style="               ")
 			print("")
-			eingabe = input("don't move ?  ")
+			eingabe = input("move? [y/N]: ")
 			h[6] = eingabe
 		
 		return(viewtable)
