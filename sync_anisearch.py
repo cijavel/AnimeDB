@@ -32,7 +32,7 @@ connectAnimeDB = sqlAni.get_sql_anime()
 parser         = pars.webparser_anisearch()
 openpage       = pars.open_webpage()
 config         = confi.get_configfile()
-path_DB        = config.get_KeyValue("settings", "path_DB")
+const_path_DB  = config.get_KeyValue("settings", "path_DB")
 
 
 
@@ -340,7 +340,7 @@ def start_anisearSyncro(connection):
 # MAIN
 
 
-start_anisearSyncro(path_DB)
+start_anisearSyncro(const_path_DB)
 
 
 
