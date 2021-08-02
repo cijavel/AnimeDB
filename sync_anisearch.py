@@ -241,6 +241,7 @@ class set_sql_anime:
 				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": rating")
 				
 		return()
+		
 	#----------------------------------------
 	# Date: 2021.07.05
 	# Name: set_SQL_update_anisearchPrimaryKey
@@ -262,42 +263,53 @@ class set_sql_anime:
 
 
 	#----------------------------------------
-	# Date: 2021.07.05
-	# Name: set_SQL_update_relations  XXXXXXXXXXXXXXXXXXXX
+	# Date: 2021.08.02
+	# Name: set_SQL_update_relations
 	# in:  DB connention, html raw, anisearch Id
+	# mainID -> toID
 	#----------------------------------------
-	def __set_SQL_update_relations(DBconn, soup, vID_Anisearch):
+	def set_SQL_update_relations(self, DBconn, soup, vID_Anisearch):
 		
-		#infosD = parser.get_relations(soup)
-		infosD = [['4802', 'anime/4802,elfen-lied-regenschauer', 'Elfen Lied: Regenschauer', 'de', '[Nebengeschichte]', 1], ['1822', 'anime/1822,elfen-lied', 'Elfen Lied', 'de', '', 0]]
+		infosD = parser.get_relations(soup)
 		for relation in infosD:
-			h_ID = relation[0]
-			h_link = "https://www.anisearch.de/"  + relation[1]
-			h_lang =  relation[2]
-			h_rela =  relation[3]
-			h_zeig =  relation[4]
+			r_toID    = relation[0]
+			r_link  = "https://www.anisearch.de/"  + relation[1]
+			r_name  =  relation[2]
+			r_lang  =  relation[3]
+			h_rela  =  relation[4]
+			h_short =  relation[5]
 
-			print(h_ID	)
-			print(h_link)	
-			print(h_lang)	
-			print(h_rela)
-			print(h_zeig)
+
 			
 			# Prüfe , ob es die Beziehung schon gibt  main -> to
-			# wenn nein anlegen
-			# wenn ja ändern ?? 
 
+			
+			#Check IF relation has already Content 
+			strSelectSQL = "SELECT as_relation.ID FROM as_relation WHERE as_relation.fs_as_anime_main = :xfrom AND as_relation.fs_as_anime_to = :xto "
+			conn = sqlite3.connect(DBconn)
+			with conn:
+				cursor = conn.cursor()
+				cursor.execute(strSelectSQL, {"xfrom": vID_Anisearch, "xto": r_toID})
+				results = cursor.fetchall()
+			# If NOT insert - else CONTENT update
+			if not results:
+				conn = sqlite3.connect(DBconn)
+				with conn:
+					cursor = conn.cursor()
+					strInsertSQL = "INSERT INTO as_relation (fs_as_anime_main, fs_as_anime_to, name, name_language, link, relation_description, relation_direct) VALUES (:xfrom, :xto, :xName, :xLang, :xLink, :xDesc, :xDirc)"
+					cursor.execute(strInsertSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xName":r_name, "xLang":r_lang, "xLink":r_link, "xDesc":h_rela, "xDirc":h_short})
+					conn.commit()
+					print(cursor.rowcount, " record added from anisearch for the relation: " + vID_Anisearch + " to " + r_toID + " - " + r_name) 
+			else:
+				xid = results[0][0]
+				conn = sqlite3.connect(DBconn)
+				with conn:
+					cursor = conn.cursor()
+					strUpdatetSQL = "UPDATE as_relation SET name=:xName, name_language=:xLang, link=:xLink, relation_description=:xDesc, relation_direct=:xDirc WHERE as_relation.ID = :xID"
+					cursor.execute(strUpdatetSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xName":r_name, "xLang":r_lang,  "xLink":r_link, "xDesc":h_rela, "xDirc":h_short, "xID":xid})
+					conn.commit()
+					print(cursor.rowcount, " record change from anisearch for the relation: " + vID_Anisearch + " to " + r_toID + " - " + r_name)
 		return()
-	
-	#['4802', 'anime/4802,elfen-lied-regenschauer', 'Elfen Lied: Regenschauer', 'de', '[Nebengeschichte]', 	1]
-	#['1822', 'anime/1822,elfen-lied', 				'Elfen Lied', 				'de', '', 					0]
-
-	#	"ID"				INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-	#	"name"				TEXT,
-	#	"link"				TEXT,
-	#	"fs_as_anime_main"	INTEGER,
-	#	"relation"			TEXT,
-	#	"fs_as_anime_to"	INTEGER
 
 	
 #----------------------------------------
@@ -309,7 +321,7 @@ def start_anisearSyncro(connection):
 	sq = set_sql_anime()
 	list_unsync_anime_anisearch = connectAnimeDB.get_SQL_unsyncList_anime_anisearch(connection)
 	vAS_Soup_rela = ""
-	vAS_NR = ""
+	vAS_NR = "44"
 
 	for row in list_unsync_anime_anisearch:
 		(id, vAS_Link, name) = row
@@ -317,8 +329,8 @@ def start_anisearSyncro(connection):
 		vAS_Link = vAS_Link.lstrip("#")
 		vAS_Link = vAS_Link.rstrip("#")
 		
-		print("-----------------------------------")
-		print(vAS_Link)
+		#print("-----------------------------------")
+		#print(vAS_Link)
 		
 		#vAS_Soup = openpage.get_webpage(vAS_Link)
 		#vAS_Link_rela = vAS_Link + "/relations"
@@ -329,7 +341,7 @@ def start_anisearSyncro(connection):
 		#sq.__set_SQL_update_description(connection, vAS_Soup, vAS_NR)
 		#sq.__set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
 		#sq.__set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
-		sq.__set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
+		sq.set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
 		
 		#sq.__set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
 		
