@@ -72,7 +72,7 @@ def get_extractAnimeNamefromDir(name):
 # Name: get_subdirectories
 # - get folders from os path
 #----------------------------------------
-def get_subdirectories(const_path_serienimport):
+def get_subdirectories():
 	if const_path_serienimport:
 		subdirectories = []
 		directory_contents = os.listdir(const_path_serienimport)
@@ -100,27 +100,27 @@ def get_subdirectories(const_path_serienimport):
 #----------------------------------------
 def check_levenshtein_for_anime_in_DB(DBconn):
 	all_animefoldername = connectAnimeDB.get_SQL_all_animefoldername(DBconn)
-	subdirectories = get_subdirectories(const_path_serienimport)
+	subdirectories = get_subdirectories()
 	viewtable = []
 	i = 0
 	
 	if subdirectories:
 		for fname in subdirectories:
-			iId2 = 0
-			iId1 = 0
-			aniName = ""
+			iDistanceCache01 = 0
+			iDistanceCache02 = 0
+			singleAnimeName = ""
 			i = i + 1
 			for singleAnime in all_animefoldername:
 				extractName = get_extractAnimeNamefromDir(fname)
-				iId = get_levenshtein_percent(get_extractAnimeNamefromDir(fname), singleAnime[0], 2)
+				iDistanceCache02 = get_levenshtein_percent(get_extractAnimeNamefromDir(fname), singleAnime[0], 2)
 
-				if(iId2 < iId):
-					iId2 = iId
-					aniName = singleAnime[0]
-			if iId2 > float(const_levenshtein_distance_percent):
-				viewtable.append([i, "*", str(iId2), fname, extractName,  aniName, ""])
+				if(iDistanceCache01 < iDistanceCache02):
+					iDistanceCache01 = iDistanceCache02
+					singleAnimeName = singleAnime[0]
+			if iDistanceCache01 > float(const_levenshtein_distance_percent):
+				viewtable.append([i, "*", str(iDistanceCache01), fname, extractName,  singleAnimeName, ""])
 			else:
-				viewtable.append([i, "", str(iId2),  fname, extractName,  aniName, ""])
+				viewtable.append([i, "", str(iDistanceCache01),  fname, extractName,  singleAnimeName, ""])
 			
 		header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
 		termtables.print( viewtable, header=header,  style="            -  ")
@@ -155,18 +155,16 @@ def change_animelist_to_dict(list_of_animes):
 	if list_of_animes:
 		for i in list_of_animes:
 			dict = {}
-			dict["ID"] 		= i[0]
+			dict["ID"]      = i[0]
 			dict["prozent"] = i[2]
-			dict["folder"]	= i[3]
-			dict["search"]	= i[4]
-			dict["found"]	= i[5]
-			dict["move"]	= i[6]
+			dict["folder"]  = i[3]
+			dict["search"]  = i[4]
+			dict["found"]   = i[5]
+			dict["move"]    = i[6]
 			list.append(dict)
 	else:
 		print("change_animelist_to_dict - no list")
 	return(list)
-
-
 
 
 #----------------------------------------
@@ -193,48 +191,33 @@ def insert_anime_in_DB(DBconn, list_of_anime):
 				print("Add Anime (" + folder + ") to DB")
 	else:
 		print("insert_anime_in_DB - no folder list")
-
-
-
 	return()
 
 #----------------------------------------
-# Date: 2021.07.07
-# Name: moving_folder
-# - move folder with dict
+# Date: 2021.08.01
+# Name: move_dir_to_importedDIR
+# - move a list of dir to the importedDIR. Only if value of the key 'move' = y
 #----------------------------------------
-def moving_folder(list_of_anime):
-	if list_of_anime:
-		for h in list_of_anime:
-			folder = h["folder"]
-			mov = h["move"]
+def move_dir_to_importedDIR(list_of_dirs):
+	if list_of_dirs:
+		for singleDir in list_of_dirs:
+			dirName = singleDir["folder"]
+			mov    = singleDir["move"]
 			if mov =="y":
-				original = const_path_serienimport  + "\\" + folder
-				target = const_path_serienimport + "\\" + const_importedDIR + "\\" + folder
+				original = const_path_serienimport + "\\" + dirName
+				target   = const_path_serienimport + "\\" + const_importedDIR + "\\" + dirName
 				shutil.move(original,target)
-				print("move folder (" + folder + ") to " + const_importedDIR)
+				print("move directory (" + dirName + ") to " + const_importedDIR)
 	else:
-		print("moving_folder - no folder list")
+		print("move_dir_to_importedDIR - no directory list")
 	return()
-
-
 
 
 
 # MAIN
 list_of_compared_animes  = check_levenshtein_for_anime_in_DB(const_path_DB)
 dirct_of_anime = change_animelist_to_dict(list_of_compared_animes)
-moving_folder(dirct_of_anime)
+move_dir_to_importedDIR(dirct_of_anime)
 insert_anime_in_DB(const_path_DB, dirct_of_anime)
-
-
-
-
-
-
-
-
-
-
 
 

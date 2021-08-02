@@ -61,13 +61,13 @@ class set_sql_anime:
 
 		infosD = parser.get_infodetails(soup)
 		
-		if 'Typ' 			in infosD: vTyp =		connectAnimeDB.get_SQL_TypeID(DBconn, infosD['Typ'])
-		if 'Veröffentlicht' in infosD: vPubDate = 	infosD['Veröffentlicht']
-		if 'Hauptgenres' 	in infosD: vGenre = 	connectAnimeDB.get_SQL_GenreID(DBconn, infosD['Hauptgenres'])
-		if 'Herkunft' 		in infosD: vOrigin =	connectAnimeDB.get_SQL_originID(DBconn, infosD['Herkunft'])
-		if 'Adaptiert von'	in infosD: vAdapt =	 	connectAnimeDB.get_SQL_AdaptionID(DBconn, infosD['Adaptiert von'])
-		if 'Zielgruppe' 	in infosD: vGroup = 	connectAnimeDB.get_SQL_TargetGroupID(DBconn, infosD['Zielgruppe'])
-		if 'Episoden' 		in infosD: 
+		if 'Typ'            in infosD: vTyp =       connectAnimeDB.get_SQL_TypeID(DBconn, infosD['Typ'])
+		if 'Veröffentlicht' in infosD: vPubDate =   infosD['Veröffentlicht']
+		if 'Hauptgenres'    in infosD: vGenre =     connectAnimeDB.get_SQL_GenreID(DBconn, infosD['Hauptgenres'])
+		if 'Herkunft'       in infosD: vOrigin =    connectAnimeDB.get_SQL_originID(DBconn, infosD['Herkunft'])
+		if 'Adaptiert von'  in infosD: vAdapt =     connectAnimeDB.get_SQL_AdaptionID(DBconn, infosD['Adaptiert von'])
+		if 'Zielgruppe'     in infosD: vGroup =     connectAnimeDB.get_SQL_TargetGroupID(DBconn, infosD['Zielgruppe'])
+		if 'Episoden'       in infosD: 
 			strEpisoden = infosD['Episoden']
 			x = re.findall("~[0-9]*min", strEpisoden)
 			y = re.findall("[0-9]* ", strEpisoden)

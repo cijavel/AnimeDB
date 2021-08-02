@@ -60,7 +60,6 @@ class get_configfile:
 			config.write(get_configfile)
 		return ()
 
-	
 
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -112,6 +111,5 @@ class get_configfile:
 		config.write(get_configfile)
 		config.set(categori, key, text)				
 		return ()   
-
 
 
