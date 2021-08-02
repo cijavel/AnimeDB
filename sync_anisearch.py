@@ -29,10 +29,10 @@ except ImportError:
 
 # Object
 connectAnimeDB = sqlAni.get_sql_anime()
-parser   = pars.webparser_anisearch()
-openpage = pars.open_webpage()
-config   = confi.get_configfile()
-path_DB	 = config.get_KeyValue("settings", "path_DB")
+parser         = pars.webparser_anisearch()
+openpage       = pars.open_webpage()
+config         = confi.get_configfile()
+path_DB        = config.get_KeyValue("settings", "path_DB")
 
 
 
