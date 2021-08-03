@@ -49,7 +49,7 @@ class set_sql_anime:
 	# - update info details of the anime from anisearch
 	# in:  DB connention, html raw, anisearch ID
 	#----------------------------------------
-	def set_SQL_update_infordetails(DBconn, soup, vID_Anisearch):
+	def set_SQL_update_infordetails(self, DBconn, soup, vID_Anisearch):
 		results = ""
 		vTyp = ""
 		vEpisoden = ""
@@ -110,7 +110,7 @@ class set_sql_anime:
 	# - update description of the anime from anisearch
 	# in:  DB connention, html raw, anisearch Id
 	#----------------------------------------
-	def set_SQL_update_description(DBconn, soup, vID_Anisearch):
+	def set_SQL_update_description(self, DBconn, soup, vID_Anisearch):
 		description_de = ""
 		description_en = ""
 
@@ -158,7 +158,7 @@ class set_sql_anime:
 	# - update anime name of the anime from anisearch
 	# in:  DB connention, html raw, anisearch Id
 	#----------------------------------------
-	def set_SQL_update_animename(DBconn, soup, vID_Anisearch):
+	def set_SQL_update_animename(self, DBconn, soup, vID_Anisearch):
 		animename_de = ""
 		animename_en = ""
 		animename_ja = ""
@@ -205,7 +205,7 @@ class set_sql_anime:
 	# - update rating of the anime from anisearch
 	# in:  DB connention, html raw, anisearch Id
 	#----------------------------------------
-	def set_SQL_update_rating(DBconn, soup, vID_Anisearch):
+	def set_SQL_update_rating(self, DBconn, soup, vID_Anisearch):
 		rating_per = ""
 		rating_val = ""
 		infosD = parser.get_rating(soup)
@@ -248,7 +248,7 @@ class set_sql_anime:
 	# - update primary key of anisearch in the anime table after the update process is finished. After this is set, the anime will not shwon in the toDo list anymore
 	# in:  DB connection, anime ID, anisearch ID
 	#----------------------------------------
-	def set_SQL_update_anisearchPrimaryKey(DBconn, vID_Anime, vID_Anisearch):
+	def set_SQL_update_anisearchPrimaryKey(self, DBconn, vID_Anime, vID_Anisearch):
 
 		#Check IF anime has already Content 
 		strUpdatetSQL = "UPDATE anime SET fs_as_anime=:xAS_ID WHERE anime.ID = :xID"
