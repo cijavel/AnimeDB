@@ -329,21 +329,20 @@ def start_anisearSyncro(connection):
 		vAS_Link = vAS_Link.lstrip("#")
 		vAS_Link = vAS_Link.rstrip("#")
 		
-		#print("-----------------------------------")
-		#print(vAS_Link)
+		print("-----------------------------------")
+		print(vAS_Link)
 		
-		#vAS_Soup = openpage.get_webpage(vAS_Link)
-		#vAS_Link_rela = vAS_Link + "/relations"
-		#vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
-		#vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link)	
-		#
-		#sq.set_SQL_update_infordetails(connection, vAS_Soup, vAS_NR)
-		#sq.set_SQL_update_description(connection, vAS_Soup, vAS_NR)
-		#sq.set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
-		#sq.set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
+		vAS_Soup = openpage.get_webpage(vAS_Link)
+		vAS_Link_rela = vAS_Link + "/relations"
+		vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
+		vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link)
+		
+		sq.set_SQL_update_infordetails(connection, vAS_Soup, vAS_NR)
+		sq.set_SQL_update_description(connection, vAS_Soup, vAS_NR)
+		sq.set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
+		sq.set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
-		
-		#sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
+		sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
 		
 		break
 	
