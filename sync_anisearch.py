@@ -73,8 +73,10 @@ class set_sql_anime:
 			replaced = re.sub('\?', ' ', strEpisoden)                            # replace ? with space
 			x = re.findall(r'~[0-9 ]*min', replaced)
 			y = re.findall("[0-9]* ", replaced)
-			vEpisoden_length = x[0]
-			vEpisoden_Nr = y[0].strip()
+			if x: vEpisoden_length = x[0]     
+			else: vEpisoden_length = ''
+			if x: vEpisoden_Nr = y[0].strip() 
+			else: vEpisoden_Nr = ''
 		
 
 		#Check IF anime has already Content 
