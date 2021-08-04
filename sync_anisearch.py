@@ -69,8 +69,10 @@ class set_sql_anime:
 		if 'Zielgruppe'     in infosD: vGroup =     connectAnimeDB.get_SQL_TargetGroupID(DBconn, infosD['Zielgruppe'])
 		if 'Episoden'       in infosD: 
 			strEpisoden = infosD['Episoden']
-			x = re.findall("~[0-9]*min", strEpisoden)
-			y = re.findall("[0-9]* ", strEpisoden)
+			strEpisoden = strEpisoden.encode("ascii", "replace").decode("utf-8") # replace unicode with ?
+			replaced = re.sub('\?', ' ', strEpisoden)                            # replace ? with space
+			x = re.findall(r'~[0-9 ]*min', replaced)
+			y = re.findall("[0-9]* ", replaced)
 			vEpisoden_length = x[0]
 			vEpisoden_Nr = y[0].strip()
 		
