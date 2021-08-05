@@ -212,11 +212,14 @@ class set_sql_anime:
 	def set_SQL_update_rating(self, DBconn, soup, vID_Anisearch):
 		rating_per = ""
 		rating_val = ""
+		rating_ran = ""
 		infosD = parser.get_rating(soup)
-		rating_val = infosD[0]
-		rating_per = infosD[1]
-		
-		
+
+		print("---->" + str(infosD))
+		rating_val = infosD['rating_val']
+		rating_per = infosD['rating_per']
+		rating_ran = infosD['rating_rank']
+
 		#Check IF anime has already Content 
 		strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :xID"
 		conn = sqlite3.connect(DBconn)
@@ -225,25 +228,25 @@ class set_sql_anime:
 			cursor.execute(strSelectSQL, {"xID": vID_Anisearch})
 			results = cursor.fetchall()
 
-			
+
 		# If NOT insert - else CONTENT update
 		if not results:
 			conn = sqlite3.connect(DBconn)
 			with conn:
 				cursor = conn.cursor()
-				strInsertSQL = "INSERT INTO as_anime (ID, rating_number, rating_percent) VALUES (:xID, :xNR, :xPE)"
-				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per })
+				strInsertSQL = "INSERT INTO as_anime (ID, rating_number, rating_percent, rating_rank) VALUES (:xID, :xNR, :xPE, :xRA)"
+				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per, "xRA": rating_ran })
 				conn.commit()
 				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": rating") 
 		else:
 			conn = sqlite3.connect(DBconn)
 			with conn:
 				cursor = conn.cursor()
-				strUpdatetSQL = "UPDATE as_anime SET rating_number=:xNR, rating_percent=:xPE  WHERE as_anime.ID = :xID"
-				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per })
+				strUpdatetSQL = "UPDATE as_anime SET rating_number=:xNR, rating_percent=:xPE, rating_rank=:xRA  WHERE as_anime.ID = :xID"
+				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per, "xRA": rating_ran })
 				conn.commit()
 				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": rating")
-				
+
 		return()
 		
 	#----------------------------------------
@@ -346,7 +349,7 @@ def start_anisearSyncro(connection):
 		sq.set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
-		sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
+		#sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
 		
 		break
 	

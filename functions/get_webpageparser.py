@@ -81,20 +81,35 @@ class webparser_anisearch:
 	# Date: 2021.07.05
 	# Name: get_rating
 	# - parse rating from html source
-	# out: list (number, procent)
+	# out: dict
 	#----------------------------------------
 	def get_rating(self, soup):
 		rating = soup.find(id='ratingstats')
-		daten = ""
+		daten = {}
 		if rating:
-			for rat in rating.find_all("span"): 
-				if rat.has_attr('itemprop'):
-					big = rat.find_parent("span").text
-					daten = big.split("=")
-					break
+			for rat in rating.find_all("td"):
+
+				minus = rat.find("span")
+				if minus is not None:
+					soup_name = BeautifulSoup(str(rat).replace(str(minus), ""), 'html.parser')
+					name = soup_name.find("td").text
+					soup_value = BeautifulSoup(str(minus), 'html.parser')
+					value = soup_value.find("span").text
+
+					if name == "Rang":
+						daten.update({"rating_rank": value.lstrip('#')})
+					if name == "Klarwert":
+						rating_value = value.split("=")
+						daten.update({"rating_val": rating_value[0]})
+						daten.update({"rating_per": rating_value[1]})
 		else:
 			print("ERROR - get_rating - No rating found")
-		return daten
+
+		if daten:
+			return daten
+		else:
+			print("ERROR - get_rating - parsing error. anisearch webpage has change ?")
+			return None
 
 	#----------------------------------------
 	# Date: 2021.07.05
