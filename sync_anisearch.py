@@ -214,8 +214,6 @@ class set_sql_anime:
 		rating_val = ""
 		rating_ran = ""
 		infosD = parser.get_rating(soup)
-
-		print("---->" + str(infosD))
 		rating_val = infosD['rating_val']
 		rating_per = infosD['rating_per']
 		rating_ran = infosD['rating_rank']
