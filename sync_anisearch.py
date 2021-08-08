@@ -5,8 +5,10 @@ Created on 05.07.2021
 import pyodbc
 import sqlite3
 import re
-
-
+import logging
+from logging import config
+config.fileConfig("config/logging.conf")
+logger = logging.getLogger("main")
 
 try:
     import functions.get_configfile as confi
@@ -96,7 +98,8 @@ class set_sql_anime:
 				strInsertSQL = "INSERT INTO as_anime (ID, episodesnumber, length , publicationdate, fs_as_genre, fs_as_type, fs_as_origin, fs_as_adaption, fs_as_targetgroup) VALUES (:xID, :xepisNR, :xlength , :xpubdate, :xgenre, :xtype, :xorigin, :xadaption, :xtargetgroup)"
 				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup})
 				conn.commit()
-				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": infordetails") 
+				logger.info('anime %s - added to database',vID_Anisearch)
+
 		else:
 			conn = sqlite3.connect(DBconn)
 			with conn:
@@ -104,7 +107,7 @@ class set_sql_anime:
 				strUpdatetSQL = "UPDATE as_anime SET episodesnumber=:xepisNR, length=:xlength , publicationdate=:xpubdate, fs_as_genre=:xgenre, fs_as_type=:xtype, fs_as_origin=:xorigin, fs_as_adaption=:xadaption, fs_as_targetgroup=:xtargetgroup WHERE as_anime.ID = :xID"
 				cursor.execute(strUpdatetSQL,  {"xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup, "xID": vID_Anisearch})
 				conn.commit()
-				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": infordetails" ) 	
+				logger.info('anime %s - changed in database',vID_Anisearch)
 		
 		return("Done")	
 
@@ -142,7 +145,7 @@ class set_sql_anime:
 				strInsertSQL = "INSERT INTO as_anime (ID, description_en, description_de) VALUES (:xID, :xDE, :xEN)"
 				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
 				conn.commit()
-				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": description") 
+				logger.info('anime %s - added description',vID_Anisearch)
 		else:
 			conn = sqlite3.connect(DBconn)
 			with conn:
@@ -150,7 +153,7 @@ class set_sql_anime:
 				strUpdatetSQL = "UPDATE as_anime SET description_en=:xEN, description_de=:xDE  WHERE as_anime.ID = :xID"
 				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
 				conn.commit()
-				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": description" ) 
+				logger.info('anime %s - changed description',vID_Anisearch)
 			
 		return("Done")
 
@@ -191,7 +194,7 @@ class set_sql_anime:
 				strInsertSQL = "INSERT INTO as_anime (ID, name_de, name_en, name_ja) VALUES (:xID, :xDE, :xEN, :xJA)"
 				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xDE": animename_de, "xEN": animename_en, "xJA": animename_ja })
 				conn.commit()
-				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": animename") 
+				logger.info('anime %s - added animename  ',vID_Anisearch)
 		else:
 			conn = sqlite3.connect(DBconn)
 			with conn:
@@ -199,7 +202,7 @@ class set_sql_anime:
 				strUpdatetSQL = "UPDATE as_anime SET name_en=:xEN, name_de=:xDE, name_ja=:xJA  WHERE as_anime.ID = :xID"
 				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": animename_de, "xEN": animename_en, "xJA": animename_ja })
 				conn.commit()
-				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": animename")
+				logger.info('anime %s - changed animename  ',vID_Anisearch)
 		
 		return("done")
 
@@ -235,7 +238,7 @@ class set_sql_anime:
 				strInsertSQL = "INSERT INTO as_anime (ID, rating_number, rating_percent, rating_rank) VALUES (:xID, :xNR, :xPE, :xRA)"
 				cursor.execute(strInsertSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per, "xRA": rating_ran })
 				conn.commit()
-				print(cursor.rowcount, " record(s) added from anisearch for " + vID_Anisearch + ": rating") 
+				logger.info('anime %s - added rating     ',vID_Anisearch)
 		else:
 			conn = sqlite3.connect(DBconn)
 			with conn:
@@ -243,7 +246,7 @@ class set_sql_anime:
 				strUpdatetSQL = "UPDATE as_anime SET rating_number=:xNR, rating_percent=:xPE, rating_rank=:xRA  WHERE as_anime.ID = :xID"
 				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per, "xRA": rating_ran })
 				conn.commit()
-				print(cursor.rowcount, " record(s) change from anisearch for " + vID_Anisearch + ": rating")
+				logger.info('anime %s - changed rating     ',vID_Anisearch)
 
 		return()
 		
@@ -304,7 +307,7 @@ class set_sql_anime:
 					strInsertSQL = "INSERT INTO as_relation (fs_as_anime_main, fs_as_anime_to, name, name_language, link, relation_description, relation_direct) VALUES (:xfrom, :xto, :xName, :xLang, :xLink, :xDesc, :xDirc)"
 					cursor.execute(strInsertSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xName":r_name, "xLang":r_lang, "xLink":r_link, "xDesc":h_rela, "xDirc":h_short})
 					conn.commit()
-					print(cursor.rowcount, " record added from anisearch for the relation: " + vID_Anisearch + " to " + r_toID + " - " + r_name) 
+					logger.info('anime %s - added relations   %s to %s - %s',vID_Anisearch, vID_Anisearch, r_toID, r_name)
 			else:
 				xid = results[0][0]
 				conn = sqlite3.connect(DBconn)
@@ -313,7 +316,7 @@ class set_sql_anime:
 					strUpdatetSQL = "UPDATE as_relation SET name=:xName, name_language=:xLang, link=:xLink, relation_description=:xDesc, relation_direct=:xDirc WHERE as_relation.ID = :xID"
 					cursor.execute(strUpdatetSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xName":r_name, "xLang":r_lang,  "xLink":r_link, "xDesc":h_rela, "xDirc":h_short, "xID":xid})
 					conn.commit()
-					print(cursor.rowcount, " record change from anisearch for the relation: " + vID_Anisearch + " to " + r_toID + " - " + r_name)
+					logger.info('anime %s - changed relations   %s to %s - %s',vID_Anisearch, vID_Anisearch, r_toID, r_name)
 		return()
 
 	
@@ -354,7 +357,6 @@ def start_anisearSyncro(connection):
 	return()		
 	
 # MAIN
-
 
 start_anisearSyncro(const_path_DB)
 
