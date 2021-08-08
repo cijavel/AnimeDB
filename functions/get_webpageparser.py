@@ -26,7 +26,11 @@ class webparser_anisearch:
 		else:
 			print("ERROR - get_infodetails - No anime details found")
 			
-		return infodetails
+		if infodetails:
+			return infodetails
+		else:
+			print("ERROR - get_infodetails - parsing error. anisearch webpage has changed ?")
+			return None
 		
 	#----------------------------------------	
 	# Date: 2021.07.05
@@ -52,7 +56,11 @@ class webparser_anisearch:
 		else:
 			print("ERROR - get_description - No description found")
 
-		return werte
+		if werte:
+			return werte
+		else:
+			print("ERROR - get_description - parsing error. anisearch webpage has changed ?")
+			return None
 		
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -75,7 +83,12 @@ class webparser_anisearch:
 		else:
 			print("ERROR - get_animename - No animename found")
 			
-		return animeName
+
+		if animeName:
+			return animeName
+		else:
+			print("ERROR - get_animename - parsing error. anisearch webpage has changed ?")
+			return None
 	
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -108,7 +121,7 @@ class webparser_anisearch:
 		if daten:
 			return daten
 		else:
-			print("ERROR - get_rating - parsing error. anisearch webpage has change ?")
+			print("ERROR - get_rating - parsing error. anisearch webpage has changed ?")
 			return None
 
 	#----------------------------------------
@@ -144,12 +157,16 @@ class webparser_anisearch:
 				else:
 					end_rel_direct = 0
 				relationlist.append([end_number, end_link, end_name,end_lang, end_rel_descrip , end_rel_direct])
-
 		else:
 			print("ERROR - get_relations - No relations found")
 
+		if relationlist:
+			return relationlist
+		else:
+			print("ERROR - get_relations - parsing error. anisearch webpage has changed ?")
+			return None
 
-		return relationlist
+		
 	#----------------------------------------
 	# Date: 2021.07.05
 	# Name: PrimaryKey Anisearch - good
@@ -168,8 +185,11 @@ class webparser_anisearch:
 			except:
 				print("ERROR - get_anisearchPrimaryKey - please check link: " + link )
 			
-		return number
-
+		if number:
+			return number
+		else:
+			print("ERROR - get_anisearchPrimaryKey - parsing error. anisearch webpage has changed ?")
+			return None
 
 
 class open_webpage:
