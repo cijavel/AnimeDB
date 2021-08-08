@@ -49,7 +49,7 @@ class webparser_anisearch:
 		desc = soup.find(id='description')
 
 		if desc:
-			for tr in desc.find_all("div", {'itemprop':'description'}):
+			for tr in desc.find_all("div", {"class": "details-text"}):
 				sValue = tr.text
 				skey = tr.get('lang')
 				werte.update({skey: sValue})
