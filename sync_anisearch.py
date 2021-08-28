@@ -139,8 +139,7 @@ class set_sql_anime:
 
 		if 'en' in infosD: description_en = infosD['en']
 		if 'de' in infosD: description_de = infosD['de']
-		
-		
+
 		#Check IF anime has already Content 
 		strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :xID"
 		conn = sqlite3.connect(DBconn)
@@ -149,7 +148,6 @@ class set_sql_anime:
 			cursor.execute(strSelectSQL, {"xID": vID_Anisearch})
 			results = cursor.fetchall()
 
-			
 		# If NOT insert - else CONTENT update
 		if not results:
 			conn = sqlite3.connect(DBconn)
@@ -170,9 +168,6 @@ class set_sql_anime:
 			# after
 			after = "[("+str(vID_Anisearch)+", '"+str(description_en)+"', '"+str(description_de)+"')]"
 			
-			print(before)
-			print(after)
-			
 			if (str(before) == str(after)):
 				logger.info('anime %s - no change for description',vID_Anisearch)
 			else:
@@ -183,9 +178,6 @@ class set_sql_anime:
 					cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
 					conn.commit()
 					logger.info('anime %s - changed description',vID_Anisearch)
-					
-				
-
 
 			
 		return("Done")
