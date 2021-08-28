@@ -346,7 +346,7 @@ class set_sql_anime:
 						logger.info('anime %s - changed relations   %s to %s - %s',vID_Anisearch, vID_Anisearch, r_toID, r_name)
 		return()
 
-	
+
 #----------------------------------------
 # Date: 2021.07.05
 # Name: start_anisearSyncro
@@ -366,7 +366,7 @@ def start_anisearSyncro(connection):
 		
 		print("-----------------------------------")
 		print(vAS_Link)
-		
+
 		vAS_Soup = openpage.get_webpage(vAS_Link)
 		vAS_Link_rela = vAS_Link + "/relations"
 		vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
@@ -380,65 +380,12 @@ def start_anisearSyncro(connection):
 		#sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
 		
 		break
-	
-	return()		
+
+	return()
 	
 # MAIN
 
 start_anisearSyncro(const_path_DB)
-
-
-
-
-
-
-
-
-
-#----------------------------------------
-# Test
-#----------------------------------------
-def get_test_parser(connection):
-	vAS_Link = "https://www.anisearch.de/anime/15898,vivy-fluorite-eyes-song"
-	vAS_Soup = openpage.get_webpage(vAS_Link)
-	vAS_Link_rela = vAS_Link + "/relations"
-	print(vAS_Link_rela)
-	vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
-	print(vAS_Soup_rela)
-	
-	if vAS_Soup != "":
-		animeInfosD = parser.get_infodetails(vAS_Soup)
-		animeDescrip = parser.get_description(vAS_Soup)
-		animeName = parser.get_animename(vAS_Soup)
-		animeRating = parser.get_rating(vAS_Soup)
-		vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link)
-	else:
-		print ("vAS_Soup: no html")
-		
-	if vAS_Soup_rela != "":
-		animeRelations = parser.get_relations(vAS_Soup_rela)
-	else:
-		print("vAS_Soup_rela: no html")
-	return()
-	
-def get_test_SQLids(connection):
-	result = connectAnimeDB.get_SQL_unsyncList_anime_anisearch(connection) # good
-	for rs in result:
-		print(rs)
-	result = connectAnimeDB.get_SQL_GenreID(connection, "-") # good
-	print(result)
-	result = connectAnimeDB.get_SQL_TypeID(connection, "-") # good
-	print(result)
-	result = connectAnimeDB.get_SQL_originID(connection, "-") # good
-	print(result)
-	result = connectAnimeDB.get_SQL_AdaptionID(connection, "-") # good
-	print(result)
-	result = connectAnimeDB.get_SQL_TargetGroupID(connection, "-") # good
-	print(result)
-
-	
-	
-	return()
 
 
 
