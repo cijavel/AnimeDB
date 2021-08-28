@@ -101,14 +101,28 @@ class set_sql_anime:
 				logger.info('anime %s - added to database',vID_Anisearch)
 
 		else:
+
 			conn = sqlite3.connect(DBconn)
+			# before
 			with conn:
 				cursor = conn.cursor()
-				strUpdatetSQL = "UPDATE as_anime SET episodesnumber=:xepisNR, length=:xlength , publicationdate=:xpubdate, fs_as_genre=:xgenre, fs_as_type=:xtype, fs_as_origin=:xorigin, fs_as_adaption=:xadaption, fs_as_targetgroup=:xtargetgroup WHERE as_anime.ID = :xID"
-				cursor.execute(strUpdatetSQL,  {"xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup, "xID": vID_Anisearch})
-				conn.commit()
-				logger.info('anime %s - changed in database',vID_Anisearch)
-		
+				strSelectSQL = "SELECT as_anime.ID, as_anime.episodesnumber, as_anime.length , as_anime.publicationdate, as_anime.fs_as_genre, as_anime.fs_as_type, as_anime.fs_as_origin, as_anime.fs_as_adaption, as_anime.fs_as_targetgroup FROM as_anime WHERE as_anime.ID = :v_ID"
+				cursor.execute(strSelectSQL,{"v_ID": vID_Anisearch})
+				before = cursor.fetchall()
+			# after
+			after = "[("+str(vID_Anisearch)+", '"+str(vEpisoden_Nr)+"', '"+str(vEpisoden_length)+"', '"+str(vPubDate)+"', "+str(vGenre)+", "+str(vTyp)+", "+str(vOrigin)+", "+str(vAdapt)+", "+str(vGroup)+")]"
+
+			if (str(before) == after):
+				logger.info('anime %s - no change in database',vID_Anisearch)
+			else:
+				#action
+				with conn:
+					cursor = conn.cursor()
+					strUpdatetSQL = "UPDATE as_anime SET episodesnumber=:xepisNR, length=:xlength , publicationdate=:xpubdate, fs_as_genre=:xgenre, fs_as_type=:xtype, fs_as_origin=:xorigin, fs_as_adaption=:xadaption, fs_as_targetgroup=:xtargetgroup WHERE as_anime.ID = :xID"
+					cursor.execute(strUpdatetSQL,  {"xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup, "xID": vID_Anisearch})
+					conn.commit()
+				logger.info('anime %s - changed in database  ',vID_Anisearch)
+
 		return("Done")	
 
 	#----------------------------------------
@@ -121,7 +135,6 @@ class set_sql_anime:
 		description_de = ""
 		description_en = ""
 
-		
 		infosD = parser.get_description(soup)
 
 		if 'en' in infosD: description_en = infosD['en']
@@ -148,12 +161,32 @@ class set_sql_anime:
 				logger.info('anime %s - added description',vID_Anisearch)
 		else:
 			conn = sqlite3.connect(DBconn)
+			# before
 			with conn:
 				cursor = conn.cursor()
-				strUpdatetSQL = "UPDATE as_anime SET description_en=:xEN, description_de=:xDE  WHERE as_anime.ID = :xID"
-				cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
-				conn.commit()
-				logger.info('anime %s - changed description',vID_Anisearch)
+				strSelectSQL = "SELECT as_anime.ID, as_anime.description_en, as_anime.description_de FROM as_anime WHERE as_anime.ID = :v_ID"
+				cursor.execute(strSelectSQL,{"v_ID": vID_Anisearch})
+				before = cursor.fetchall()
+			# after
+			after = "[("+str(vID_Anisearch)+", '"+str(description_en)+"', '"+str(description_de)+"')]"
+			
+			print(before)
+			print(after)
+			
+			if (str(before) == str(after)):
+				logger.info('anime %s - no change for description',vID_Anisearch)
+			else:
+				#action
+				with conn:
+					cursor = conn.cursor()
+					strUpdatetSQL = "UPDATE as_anime SET description_en=:xEN, description_de=:xDE  WHERE as_anime.ID = :xID"
+					cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
+					conn.commit()
+					logger.info('anime %s - changed description',vID_Anisearch)
+					
+				
+
+
 			
 		return("Done")
 
