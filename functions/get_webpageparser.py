@@ -5,6 +5,10 @@ Created on 05.07.2021
 import requests
 from bs4 import BeautifulSoup
 import re
+import logging
+from logging import config
+config.fileConfig("config/logging.conf")
+logger = logging.getLogger("func")
 
 class webparser_anisearch:
 	#----------------------------------------
@@ -23,10 +27,15 @@ class webparser_anisearch:
 				skey = tag.find('span').text
 				sValue = tag.text.replace(skey, "")
 				infodetails.update({skey: sValue})
+	
+			if infodetails:
+				return infodetails
+			else:
+				logger.error("parsing error. Can't parse values. webpage struktur might have changed")
+				return None
 		else:
-			print("ERROR - get_infodetails - No anime details found")
-			
-		return infodetails
+			logger.error('parsing error. No anime details section found')
+			return None
 		
 	#----------------------------------------	
 	# Date: 2021.07.05
@@ -45,14 +54,20 @@ class webparser_anisearch:
 		desc = soup.find(id='description')
 
 		if desc:
-			for tr in desc.find_all("div", {'itemprop':'description'}):
+			for tr in desc.find_all("div", {"class": "details-text"}):
 				sValue = tr.text
 				skey = tr.get('lang')
 				werte.update({skey: sValue})
+			if werte:
+				return werte
+			else:
+				logger.error("parsing error. Can't parse values. webpage struktur might have changed")
+				return None
 		else:
-			print("ERROR - get_description - No description found")
+			logger.error('parsing error. No description section found')
+			return None
 
-		return werte
+			
 		
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -67,34 +82,58 @@ class webparser_anisearch:
 		animeName = {}
 
 		name = soup.find(id='information')
+
 		if name:
 			for tag in name.find_all("div", {"class": "title"}): 
 				sValue = tag.find('strong').text
 				skey = tag.get('lang')
 				animeName.update({skey: sValue})
+			if animeName:
+				return animeName
+			else:
+				logger.error("parsing error. Can't parse values. webpage struktur might have changed")
+				return None	
 		else:
-			print("ERROR - get_animename - No animename found")
+			logger.error('parsing error. No animename section found')
+			return None
 			
-		return animeName
+
+		
 	
 	#----------------------------------------
 	# Date: 2021.07.05
 	# Name: get_rating
 	# - parse rating from html source
-	# out: list (number, procent)
+	# out: dict
 	#----------------------------------------
 	def get_rating(self, soup):
 		rating = soup.find(id='ratingstats')
-		daten = ""
+		daten = {}
 		if rating:
-			for rat in rating.find_all("span"): 
-				if rat.has_attr('itemprop'):
-					big = rat.find_parent("span").text
-					daten = big.split("=")
-					break
+			for rat in rating.find_all("td"):
+
+				minus = rat.find("span")
+				if minus is not None:
+					soup_name = BeautifulSoup(str(rat).replace(str(minus), ""), 'html.parser')
+					name = soup_name.find("td").text
+					soup_value = BeautifulSoup(str(minus), 'html.parser')
+					value = soup_value.find("span").text
+
+					if name == "Rang":
+						daten.update({"rating_rank": value.lstrip('#')})
+					if name == "Klarwert":
+						rating_value = value.split("=")
+						daten.update({"rating_val": rating_value[0]})
+						daten.update({"rating_per": rating_value[1]})
+
+			if daten:
+				return daten
+			else:
+				logger.error("parsing error. Can't parse values. webpage struktur might have changed")
+				return None
 		else:
-			print("ERROR - get_rating - No rating found")
-		return daten
+			logger.error('parsing error. No rating section found')
+			return None
 
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -130,11 +169,18 @@ class webparser_anisearch:
 					end_rel_direct = 0
 				relationlist.append([end_number, end_link, end_name,end_lang, end_rel_descrip , end_rel_direct])
 
+			if relationlist:
+				return relationlist
+			else:
+				logger.error("parsing error. Can't parse values. webpage struktur might have changed")
+				return None
 		else:
-			print("ERROR - get_relations - No relations found")
+			logger.error('parsing error. No relations section found')
+			return None
 
+		
 
-		return relationlist
+		
 	#----------------------------------------
 	# Date: 2021.07.05
 	# Name: PrimaryKey Anisearch - good
@@ -151,10 +197,13 @@ class webparser_anisearch:
 				number = get_animeNumber[0]
 				number = number.replace("/", "")
 			except:
-				print("ERROR - get_anisearchPrimaryKey - please check link: " + link )
-			
-		return number
+				logger.error('please check link: %s' + link)
 
+		if number:
+			return number
+		else:
+			logger.error("parsing error. Can't parse values. Link struktur might have changed")
+			return None
 
 
 class open_webpage:
@@ -166,17 +215,19 @@ class open_webpage:
 	#----------------------------------------
 	def get_webpage(self, link):
 		soup = "no html"
+
 		try:
 			r = requests.get(link, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'})
 		except:
-			print("get_html: wrong url ?")
+			logger.error('wrong url: %s', link)
 		if str(r.status_code) == "200":
 			soup = BeautifulSoup(r.text, 'html.parser')
-
+			return soup
 		else:
-			print(" webpage error for: " + link + " - Pease check adress. error: " + str(r.status_code))
+			logger.error('webpage error: %s - Pease check adress. error: %s', link, str(r.status_code))
+			return None
 
-		return soup
+		
 	
 
 
