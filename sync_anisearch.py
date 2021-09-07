@@ -30,11 +30,12 @@ except ImportError:
     from functions import get_sql_anime as sqlAni
 
 # Object
-connectAnimeDB = sqlAni.get_sql_anime()
-parser         = pars.webparser_anisearch()
-openpage       = pars.open_webpage()
-config         = confi.get_configfile()
-const_path_DB  = config.get_KeyValue("settings", "path_DB")
+connectAnimeDB       = sqlAni.get_sql_anime()
+parser               = pars.webparser_anisearch()
+openpage             = pars.open_webpage()
+config               = confi.get_configfile()
+const_path_DB        = config.get_KeyValue("settings", "path_DB")
+const_anisearchLink  = config.get_KeyValue("anisearch", "link")
 
 
 
@@ -307,15 +308,13 @@ class set_sql_anime:
 		infosD = parser.get_relations(soup)
 		if infosD:
 			for relation in infosD:
-				r_toID    = relation[0]
-				r_link  = "https://www.anisearch.de/"  + relation[1]
-				r_name  =  relation[2]
-				r_lang  =  relation[3]
-				h_rela  =  relation[4]
-				h_short =  relation[5]
+				r_toID  = relation[0]
+				r_link  = const_anisearchLink  + relation[1]
+				r_name  = relation[2]
+				r_lang  = relation[3]
+				h_rela  = relation[4]
+				h_short = relation[5]
 
-
-				
 				# Prüfe , ob es die Beziehung schon gibt  main -> to
 
 				
