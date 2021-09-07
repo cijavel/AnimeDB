@@ -175,7 +175,9 @@ class webparser_anisearch:
 				logger.error("parsing error. Can't parse values. webpage struktur might have changed")
 				return None
 		else:
-			logger.error('parsing error. No relations section found')
+			relationblock = soup.find("div", {"class": "helptext"})
+			if -1 == int(relationblock.text.index("Werke eine Relation")):
+				logger.error('parsing error. No relations section found')
 			return None
 
 		
