@@ -315,9 +315,6 @@ class set_sql_anime:
 				h_rela  = relation[4]
 				h_short = relation[5]
 
-				# Prüfe , ob es die Beziehung schon gibt  main -> to
-
-				
 				#Check IF relation has already Content 
 				strSelectSQL = "SELECT as_relation.ID FROM as_relation WHERE as_relation.fs_as_anime_main = :xfrom AND as_relation.fs_as_anime_to = :xto "
 				conn = sqlite3.connect(DBconn)
