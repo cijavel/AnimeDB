@@ -56,6 +56,8 @@ class get_configfile:
 			'levenshtein_distance_percent':'80',
 			'first_language':'GerSub',
 			'storage':'NAS'}
+		config['anisearch'] = {
+			'link' : 'https://www.anisearch.de/'}
 		with open(file, 'w') as get_configfile:
 			config.write(get_configfile)
 		return ()
