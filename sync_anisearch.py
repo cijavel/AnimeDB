@@ -62,7 +62,7 @@ class set_sql_anime:
 		vAdaptiert = ""
 		vZielgruppe = ""
 
-		infosD = parser.get_infodetails(soup)
+		infosD = parser.get_infodetails(soup, vID_Anisearch)
 		if infosD:
 			if 'Typ'            in infosD: vTyp =       connectAnimeDB.get_SQL_TypeID(DBconn, infosD['Typ'])
 			if 'Veröffentlicht' in infosD: vPubDate =   infosD['Veröffentlicht']
@@ -136,7 +136,7 @@ class set_sql_anime:
 		description_de = ""
 		description_en = ""
 
-		infosD = parser.get_description(soup)
+		infosD = parser.get_description(soup, vID_Anisearch)
 		if infosD:
 			if 'en' in infosD: description_en = infosD['en']
 			if 'de' in infosD: description_de = infosD['de']
@@ -196,7 +196,7 @@ class set_sql_anime:
 		animename_en = ""
 		animename_ja = ""
 
-		infosD = parser.get_animename(soup)
+		infosD = parser.get_animename(soup, vID_Anisearch)
 		if infosD:
 			if 'en' in infosD: animename_en = infosD['en']
 			if 'de' in infosD: animename_de = infosD['de']
@@ -242,7 +242,7 @@ class set_sql_anime:
 		rating_per = ""
 		rating_val = ""
 		rating_ran = ""
-		infosD = parser.get_rating(soup)
+		infosD = parser.get_rating(soup, vID_Anisearch)
 		if infosD:
 			rating_val = infosD['rating_val']
 			rating_per = infosD['rating_per']
@@ -305,7 +305,7 @@ class set_sql_anime:
 	#----------------------------------------
 	def set_SQL_update_relations(self, DBconn, soup, vID_Anisearch):
 		
-		infosD = parser.get_relations(soup)
+		infosD = parser.get_relations(soup, vID_Anisearch)
 		if infosD:
 			for relation in infosD:
 				r_toID  = relation[0]
@@ -352,7 +352,8 @@ def start_anisearSyncro(connection):
 	sq = set_sql_anime()
 	list_unsync_anime_anisearch = connectAnimeDB.get_SQL_unsyncList_anime_anisearch(connection)
 	vAS_Soup_rela = ""
-	vAS_NR = "44"
+	vAS_NR = ""
+	counter = 10
 
 	for row in list_unsync_anime_anisearch:
 		(id, vAS_Link, name) = row
@@ -360,22 +361,25 @@ def start_anisearSyncro(connection):
 		vAS_Link = vAS_Link.lstrip("#")
 		vAS_Link = vAS_Link.rstrip("#")
 		
+		print("")
 		print("-----------------------------------")
 		print(vAS_Link)
 
 		vAS_Soup = openpage.get_webpage(vAS_Link)
 		vAS_Link_rela = vAS_Link + "/relations"
 		vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
-		vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link)
+		vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link, vAS_NR)
 		
 		sq.set_SQL_update_infordetails(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_description(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
-		#sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
+		sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
+		counter = counter - 1
 		
-		break
+		if counter == 0:
+			break
 
 	return()
 	
