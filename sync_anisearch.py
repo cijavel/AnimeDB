@@ -6,6 +6,9 @@ import pyodbc
 import sqlite3
 import re
 import logging
+import datetime
+
+
 from logging import config
 config.fileConfig("config/logging.conf")
 logger = logging.getLogger("main")
@@ -276,26 +279,6 @@ class set_sql_anime:
 					logger.info('anime %s - changed rating     ',vID_Anisearch)
 
 		return()
-		
-	#----------------------------------------
-	# Date: 2021.07.05
-	# Name: set_SQL_update_anisearchPrimaryKey
-	# - update primary key of anisearch in the anime table after the update process is finished. After this is set, the anime will not shwon in the toDo list anymore
-	# in:  DB connection, anime ID, anisearch ID
-	#----------------------------------------
-	def set_SQL_update_anisearchPrimaryKey(self, DBconn, vID_Anime, vID_Anisearch):
-
-		#Check IF anime has already Content 
-		strUpdatetSQL = "UPDATE anime SET fs_as_anime=:xAS_ID WHERE anime.ID = :xID"
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			cursor.execute(strUpdatetSQL, {"xAS_ID": vID_Anisearch, "xID": vID_Anime})
-			results = cursor.fetchall()
-
-		return()
-
-
 
 	#----------------------------------------
 	# Date: 2021.08.02
@@ -342,6 +325,44 @@ class set_sql_anime:
 						logger.info('anime %s - changed relations   %s to %s - %s',vID_Anisearch, vID_Anisearch, r_toID, r_name)
 		return()
 
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_anisearchPrimaryKey
+	# - update primary key of anisearch in the anime table after the update process is finished. After this is set, the anime will not shwon in the toDo list anymore
+	# in:  DB connection, anime ID, anisearch ID
+	#----------------------------------------
+	def set_SQL_update_anisearchPrimaryKey(self, DBconn, vID_Anime, vID_Anisearch):
+
+		#Check IF anime has already Content 
+		strUpdatetSQL = "UPDATE anime SET fs_as_anime=:xAS_ID WHERE anime.ID = :xID"
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			cursor.execute(strUpdatetSQL, {"xAS_ID": vID_Anisearch, "xID": vID_Anime})
+			results = cursor.fetchall()
+		return()
+
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_date
+	# - set date from the last update with anisearch
+	#----------------------------------------
+	def set_SQL_update_date(self, DBconn, vID_Anisearch):
+
+		x = datetime.datetime.now()
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			strUpdatetSQL = "UPDATE as_anime SET update_date=:xdate WHERE as_anime.ID = :xID"
+			cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xdate": x.strftime("%d.%m.%Y") })
+			conn.commit()
+			logger.info('anime %s - set update date     ',vID_Anisearch)
+
+		return()
+
+
+
+
 
 #----------------------------------------
 # Date: 2021.07.05
@@ -353,7 +374,7 @@ def start_anisearSyncro(connection):
 	list_unsync_anime_anisearch = connectAnimeDB.get_SQL_unsyncList_anime_anisearch(connection)
 	vAS_Soup_rela = ""
 	vAS_NR = ""
-	counter = 10
+	counter = 40
 
 	for row in list_unsync_anime_anisearch:
 		(id, vAS_Link, name) = row
@@ -376,6 +397,7 @@ def start_anisearSyncro(connection):
 		sq.set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
 		sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
+		sq.set_SQL_update_date(connection, vAS_NR)
 		counter = counter - 1
 		
 		if counter == 0:
