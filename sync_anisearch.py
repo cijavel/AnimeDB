@@ -83,7 +83,6 @@ class set_sql_anime:
 				else: vEpisoden_length = ''
 				if x: vEpisoden_Nr = y[0].strip() 
 				else: vEpisoden_Nr = ''
-			
 
 			#Check IF anime has already Content 
 			strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :v_ID"
@@ -126,8 +125,9 @@ class set_sql_anime:
 						cursor.execute(strUpdatetSQL,  {"xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup, "xID": vID_Anisearch})
 						conn.commit()
 					logger.info('anime %s - changed in database  ',vID_Anisearch)
-
-		return()
+			return()
+		else:
+			return(-1)
 
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -182,9 +182,9 @@ class set_sql_anime:
 						cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
 						conn.commit()
 						logger.info('anime %s - changed description',vID_Anisearch)
-
-			
-		return()
+			return()
+		else:
+			return(-1)
 
 
 
@@ -232,8 +232,9 @@ class set_sql_anime:
 					cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": animename_de, "xEN": animename_en, "xJA": animename_ja })
 					conn.commit()
 					logger.info('anime %s - changed animename  ',vID_Anisearch)
-			
-		return()
+			return()
+		else:
+			return(-1)
 
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -277,8 +278,9 @@ class set_sql_anime:
 					cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per, "xRA": rating_ran })
 					conn.commit()
 					logger.info('anime %s - changed rating     ',vID_Anisearch)
-
-		return()
+			return()
+		else:
+			return(-1)
 
 	#----------------------------------------
 	# Date: 2021.08.02
@@ -323,7 +325,10 @@ class set_sql_anime:
 						cursor.execute(strUpdatetSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xName":r_name, "xLang":r_lang,  "xLink":r_link, "xDesc":h_rela, "xDirc":h_short, "xID":xid})
 						conn.commit()
 						logger.info('anime %s - changed relations   %s to %s - %s',vID_Anisearch, vID_Anisearch, r_toID, r_name)
-		return()
+			return()
+		else:
+			return(-1)
+		
 
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -391,13 +396,16 @@ def start_anisearSyncro(connection):
 		vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
 		vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link, vAS_NR)
 		
-		sq.set_SQL_update_infordetails(connection, vAS_Soup, vAS_NR)
+		err_details = sq.set_SQL_update_infordetails(connection, vAS_Soup, vAS_NR)
+		err_names = sq.set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_description(connection, vAS_Soup, vAS_NR)
-		sq.set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
+
 		sq.set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
-		sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
-		sq.set_SQL_update_date(connection, vAS_NR)
+		
+		if err_details != -1:
+			sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
+			sq.set_SQL_update_date(connection, vAS_NR)
 		counter = counter - 1
 		
 		if counter == 0:
