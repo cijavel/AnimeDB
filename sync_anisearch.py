@@ -6,6 +6,9 @@ import pyodbc
 import sqlite3
 import re
 import logging
+import datetime
+
+
 from logging import config
 config.fileConfig("config/logging.conf")
 logger = logging.getLogger("main")
@@ -62,7 +65,7 @@ class set_sql_anime:
 		vAdaptiert = ""
 		vZielgruppe = ""
 
-		infosD = parser.get_infodetails(soup)
+		infosD = parser.get_infodetails(soup, vID_Anisearch)
 		if infosD:
 			if 'Typ'            in infosD: vTyp =       connectAnimeDB.get_SQL_TypeID(DBconn, infosD['Typ'])
 			if 'Veröffentlicht' in infosD: vPubDate =   infosD['Veröffentlicht']
@@ -80,7 +83,6 @@ class set_sql_anime:
 				else: vEpisoden_length = ''
 				if x: vEpisoden_Nr = y[0].strip() 
 				else: vEpisoden_Nr = ''
-			
 
 			#Check IF anime has already Content 
 			strSelectSQL = "SELECT as_anime.ID FROM as_anime WHERE as_anime.ID = :v_ID"
@@ -123,8 +125,9 @@ class set_sql_anime:
 						cursor.execute(strUpdatetSQL,  {"xepisNR": vEpisoden_Nr, "xlength": vEpisoden_length, "xpubdate": vPubDate, "xgenre": vGenre, "xtype": vTyp, "xorigin": vOrigin, "xadaption": vAdapt, "xtargetgroup": vGroup, "xID": vID_Anisearch})
 						conn.commit()
 					logger.info('anime %s - changed in database  ',vID_Anisearch)
-
-		return()
+			return()
+		else:
+			return(-1)
 
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -136,7 +139,7 @@ class set_sql_anime:
 		description_de = ""
 		description_en = ""
 
-		infosD = parser.get_description(soup)
+		infosD = parser.get_description(soup, vID_Anisearch)
 		if infosD:
 			if 'en' in infosD: description_en = infosD['en']
 			if 'de' in infosD: description_de = infosD['de']
@@ -179,9 +182,9 @@ class set_sql_anime:
 						cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": description_de, "xEN": description_en })
 						conn.commit()
 						logger.info('anime %s - changed description',vID_Anisearch)
-
-			
-		return()
+			return()
+		else:
+			return(-1)
 
 
 
@@ -196,7 +199,7 @@ class set_sql_anime:
 		animename_en = ""
 		animename_ja = ""
 
-		infosD = parser.get_animename(soup)
+		infosD = parser.get_animename(soup, vID_Anisearch)
 		if infosD:
 			if 'en' in infosD: animename_en = infosD['en']
 			if 'de' in infosD: animename_de = infosD['de']
@@ -229,8 +232,9 @@ class set_sql_anime:
 					cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xDE": animename_de, "xEN": animename_en, "xJA": animename_ja })
 					conn.commit()
 					logger.info('anime %s - changed animename  ',vID_Anisearch)
-			
-		return()
+			return()
+		else:
+			return(-1)
 
 	#----------------------------------------
 	# Date: 2021.07.05
@@ -242,7 +246,7 @@ class set_sql_anime:
 		rating_per = ""
 		rating_val = ""
 		rating_ran = ""
-		infosD = parser.get_rating(soup)
+		infosD = parser.get_rating(soup, vID_Anisearch)
 		if infosD:
 			rating_val = infosD['rating_val']
 			rating_per = infosD['rating_per']
@@ -274,28 +278,9 @@ class set_sql_anime:
 					cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xNR": rating_val, "xPE": rating_per, "xRA": rating_ran })
 					conn.commit()
 					logger.info('anime %s - changed rating     ',vID_Anisearch)
-
-		return()
-		
-	#----------------------------------------
-	# Date: 2021.07.05
-	# Name: set_SQL_update_anisearchPrimaryKey
-	# - update primary key of anisearch in the anime table after the update process is finished. After this is set, the anime will not shwon in the toDo list anymore
-	# in:  DB connection, anime ID, anisearch ID
-	#----------------------------------------
-	def set_SQL_update_anisearchPrimaryKey(self, DBconn, vID_Anime, vID_Anisearch):
-
-		#Check IF anime has already Content 
-		strUpdatetSQL = "UPDATE anime SET fs_as_anime=:xAS_ID WHERE anime.ID = :xID"
-		conn = sqlite3.connect(DBconn)
-		with conn:
-			cursor = conn.cursor()
-			cursor.execute(strUpdatetSQL, {"xAS_ID": vID_Anisearch, "xID": vID_Anime})
-			results = cursor.fetchall()
-
-		return()
-
-
+			return()
+		else:
+			return(-1)
 
 	#----------------------------------------
 	# Date: 2021.08.02
@@ -305,7 +290,7 @@ class set_sql_anime:
 	#----------------------------------------
 	def set_SQL_update_relations(self, DBconn, soup, vID_Anisearch):
 		
-		infosD = parser.get_relations(soup)
+		infosD = parser.get_relations(soup, vID_Anisearch)
 		if infosD:
 			for relation in infosD:
 				r_toID  = relation[0]
@@ -340,7 +325,48 @@ class set_sql_anime:
 						cursor.execute(strUpdatetSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xName":r_name, "xLang":r_lang,  "xLink":r_link, "xDesc":h_rela, "xDirc":h_short, "xID":xid})
 						conn.commit()
 						logger.info('anime %s - changed relations   %s to %s - %s',vID_Anisearch, vID_Anisearch, r_toID, r_name)
+			return()
+		else:
+			return(-1)
+		
+
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_anisearchPrimaryKey
+	# - update primary key of anisearch in the anime table after the update process is finished. After this is set, the anime will not shwon in the toDo list anymore
+	# in:  DB connection, anime ID, anisearch ID
+	#----------------------------------------
+	def set_SQL_update_anisearchPrimaryKey(self, DBconn, vID_Anime, vID_Anisearch):
+
+		#Check IF anime has already Content 
+		strUpdatetSQL = "UPDATE anime SET fs_as_anime=:xAS_ID WHERE anime.ID = :xID"
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			cursor.execute(strUpdatetSQL, {"xAS_ID": vID_Anisearch, "xID": vID_Anime})
+			results = cursor.fetchall()
 		return()
+
+	#----------------------------------------
+	# Date: 2021.07.05
+	# Name: set_SQL_update_date
+	# - set date from the last update with anisearch
+	#----------------------------------------
+	def set_SQL_update_date(self, DBconn, vID_Anisearch):
+
+		x = datetime.datetime.now()
+		conn = sqlite3.connect(DBconn)
+		with conn:
+			cursor = conn.cursor()
+			strUpdatetSQL = "UPDATE as_anime SET update_date=:xdate WHERE as_anime.ID = :xID"
+			cursor.execute(strUpdatetSQL,  {"xID": vID_Anisearch, "xdate": x.strftime("%d.%m.%Y") })
+			conn.commit()
+			logger.info('anime %s - set update date     ',vID_Anisearch)
+
+		return()
+
+
+
 
 
 #----------------------------------------
@@ -352,7 +378,8 @@ def start_anisearSyncro(connection):
 	sq = set_sql_anime()
 	list_unsync_anime_anisearch = connectAnimeDB.get_SQL_unsyncList_anime_anisearch(connection)
 	vAS_Soup_rela = ""
-	vAS_NR = "44"
+	vAS_NR = ""
+	counter = 40
 
 	for row in list_unsync_anime_anisearch:
 		(id, vAS_Link, name) = row
@@ -360,22 +387,29 @@ def start_anisearSyncro(connection):
 		vAS_Link = vAS_Link.lstrip("#")
 		vAS_Link = vAS_Link.rstrip("#")
 		
+		print("")
 		print("-----------------------------------")
 		print(vAS_Link)
 
 		vAS_Soup = openpage.get_webpage(vAS_Link)
 		vAS_Link_rela = vAS_Link + "/relations"
 		vAS_Soup_rela = openpage.get_webpage(vAS_Link_rela)
-		vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link)
+		vAS_NR = parser.get_anisearchPrimaryKey(vAS_Link, vAS_NR)
 		
-		sq.set_SQL_update_infordetails(connection, vAS_Soup, vAS_NR)
+		err_details = sq.set_SQL_update_infordetails(connection, vAS_Soup, vAS_NR)
+		err_names = sq.set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_description(connection, vAS_Soup, vAS_NR)
-		sq.set_SQL_update_animename(connection, vAS_Soup, vAS_NR)
+
 		sq.set_SQL_update_rating(connection, vAS_Soup, vAS_NR)
 		sq.set_SQL_update_relations(connection, vAS_Soup_rela, vAS_NR)
-		#sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
 		
-		break
+		if err_details != -1:
+			sq.set_SQL_update_anisearchPrimaryKey(connection, id, vAS_NR)
+			sq.set_SQL_update_date(connection, vAS_NR)
+		counter = counter - 1
+		
+		if counter == 0:
+			break
 
 	return()
 	
