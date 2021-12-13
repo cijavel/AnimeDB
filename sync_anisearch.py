@@ -377,9 +377,13 @@ class set_sql_anime:
 def start_anisearSyncro(connection):
 	sq = set_sql_anime()
 	list_unsync_anime_anisearch = connectAnimeDB.get_SQL_unsyncList_anime_anisearch(connection)
+	if not list_unsync_anime_anisearch:
+		print("no open sync tasks")
+		return()
+
 	vAS_Soup_rela = ""
 	vAS_NR = ""
-	counter = 40
+	counter = 55 #so we don't get banned from anisearch
 
 	for row in list_unsync_anime_anisearch:
 		(id, vAS_Link, name) = row
