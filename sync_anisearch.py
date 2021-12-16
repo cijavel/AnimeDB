@@ -301,7 +301,7 @@ class set_sql_anime:
 				h_short = relation[5]
 
 				#Check IF relation has already Content 
-				strSelectSQL = "SELECT as_relation.ID FROM as_relation WHERE as_relation.fs_as_anime_main = :xfrom AND as_relation.fs_as_anime_to = :xto "
+				strSelectSQL = "SELECT as_relation.ID FROM as_relation WHERE as_relation.fs_as_anime_from = :xfrom AND as_relation.fs_as_anime_to = :xto "
 				conn = sqlite3.connect(DBconn)
 				with conn:
 					cursor = conn.cursor()
@@ -312,8 +312,8 @@ class set_sql_anime:
 					conn = sqlite3.connect(DBconn)
 					with conn:
 						cursor = conn.cursor()
-						strInsertSQL = "INSERT INTO as_relation (fs_as_anime_main, fs_as_anime_to, name, name_language, link, relation_description, relation_direct) VALUES (:xfrom, :xto, :xName, :xLang, :xLink, :xDesc, :xDirc)"
-						cursor.execute(strInsertSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xName":r_name, "xLang":r_lang, "xLink":r_link, "xDesc":h_rela, "xDirc":h_short})
+						strInsertSQL = "INSERT INTO as_relation (fs_as_anime_from, fs_as_anime_to, link_to, relation_description, relation_direct) VALUES (:xfrom, :xto, :xLink, :xDesc, :xDirc)"
+						cursor.execute(strInsertSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xLink":r_link, "xDesc":h_rela, "xDirc":h_short})
 						conn.commit()
 						logger.info('anime %s - added relations   %s to %s - %s',vID_Anisearch, vID_Anisearch, r_toID, r_name)
 				else:
@@ -321,8 +321,8 @@ class set_sql_anime:
 					conn = sqlite3.connect(DBconn)
 					with conn:
 						cursor = conn.cursor()
-						strUpdatetSQL = "UPDATE as_relation SET name=:xName, name_language=:xLang, link=:xLink, relation_description=:xDesc, relation_direct=:xDirc WHERE as_relation.ID = :xID"
-						cursor.execute(strUpdatetSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xName":r_name, "xLang":r_lang,  "xLink":r_link, "xDesc":h_rela, "xDirc":h_short, "xID":xid})
+						strUpdatetSQL = "UPDATE as_relation SET link_to=:xLink, relation_description=:xDesc, relation_direct=:xDirc WHERE as_relation.ID = :xID"
+						cursor.execute(strUpdatetSQL,  {"xfrom":vID_Anisearch, "xto":r_toID, "xLink":r_link, "xDesc":h_rela, "xDirc":h_short, "xID":xid})
 						conn.commit()
 						logger.info('anime %s - changed relations   %s to %s - %s',vID_Anisearch, vID_Anisearch, r_toID, r_name)
 			return()
