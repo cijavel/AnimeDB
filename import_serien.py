@@ -44,11 +44,11 @@ const_levenshtein_distance_percent      = config.get_KeyValue("serienImport", "l
 
 # different between Linux and Windows T.T
 if platform == "linux" or platform == "linux2":
-	const_separator == '/'
+	const_separator = '/'
 elif platform == "darwin":
-	const_separator == '/'
+	const_separator = '/'
 elif platform == "win32":
-	const_separator == '\\'
+	const_separator = '\\'
 
 connectAnimeDB = sqlAni.get_sql_anime()
 
