@@ -10,6 +10,11 @@ import sqlite3
 import termtables
 import shutil
 from datetime import date
+from sys import platform
+
+
+
+
 
 
 try:
@@ -30,7 +35,6 @@ except ImportError:
 
 config = confi.get_configfile()
 const_path_DB                           = config.get_KeyValue("settings", "path_DB")
-const_BT                                = config.get_KeyValue("settings", "BT")
 const_path_serienimport                 = config.get_KeyValue("serienImport", "path_serienimport")
 const_first_language                    = config.get_KeyValue("serienImport", "first_language")
 const_storage                           = config.get_KeyValue("serienImport", "storage")
@@ -39,11 +43,12 @@ const_levenshtein_distance_percent      = config.get_KeyValue("serienImport", "l
 
 
 # different between Linux and Windows T.T
-if const_BT.lower() = "windows":
-	const_separator == '\\'
-else:
+if platform == "linux" or platform == "linux2":
 	const_separator == '/'
-
+elif platform == "darwin":
+	const_separator == '/'
+elif platform == "win32":
+	const_separator == '\\'
 
 connectAnimeDB = sqlAni.get_sql_anime()
 
