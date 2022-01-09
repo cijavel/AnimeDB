@@ -200,7 +200,7 @@ def insert_anime_in_DB(DBconn, list_of_anime):
 				with conn:
 					cursor = conn.cursor()
 					strInsertSQL = "INSERT INTO anime (foldername, fs_storage, fs_sprache, entrydate) VALUES (:xfolder, :xSto, :xSpr, :xdat)"
-					cursor.execute(strInsertSQL,  {"xfolder": folder, "xSto": storageID, "xSpr": first_languageID, "xdat": todayformat })
+					cursor.execute(strInsertSQL,  {"xfolder": get_extractAnimeNamefromDir(folder), "xSto": storageID, "xSpr": first_languageID, "xdat": todayformat })
 					conn.commit()
 				print("Add Anime (" + folder + ") to DB")
 	else:
