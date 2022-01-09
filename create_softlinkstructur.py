@@ -1,4 +1,3 @@
-import igraph
 import sqlite3
 import igraph as ig
 
@@ -24,14 +23,14 @@ def create_softlinkstructure(DBconn):
 	with conn:
 		cursor = conn.cursor()
 		cursor.execute(strSelectSQL)
-		results_count = cursor.fetchall()
+		results_anime_count = cursor.fetchall()
 
 	strSelectSQL2 = "SELECT fs_as_anime, foldername from anime WHERE fs_as_anime IS NOT NULL;"
 	conn = sqlite3.connect(DBconn)
 	with conn:
 		cursor = conn.cursor()
 		cursor.execute(strSelectSQL2)
-		results = cursor.fetchall()
+		results_anime_anisearch = cursor.fetchall()
 	
 	
 	strSelectSQL3 = "SELECT asr.fs_as_anime_from, asr.fs_as_anime_to from as_relation as asr WHERE asr.fs_as_anime_to IN (SELECT a.fs_as_anime from anime as a WHERE a.fs_as_anime IS NOT NULL) AND asr.fs_as_anime_from != asr.fs_as_anime_to;"
@@ -39,22 +38,21 @@ def create_softlinkstructure(DBconn):
 	with conn:
 		cursor = conn.cursor()
 		cursor.execute(strSelectSQL3)
-		edges = cursor.fetchall()
+		anime_edges = cursor.fetchall()
 		
 	
 	# Create a directed graph
 	g = ig.Graph(directed=False)# Add 1347 Animes
-	g.add_vertices(results_count[0][0])
+	g.add_vertices(results_anime_count[0][0])
 
 	# Add ids and labels to vertices
 	for i in range(len(g.vs)):
-		g.vs[i]["id"]= results[i][0]
-		g.vs[i]["label"]= results[i][1]
-		trans_asr_i[results[i][0]] = i
-		trans_i_asr[i] = results[i][0]
+		g.vs[i]["id"]= results_anime_anisearch[i][0]
+		g.vs[i]["label"]= results_anime_anisearch[i][1]
+		trans_asr_i[results_anime_anisearch[i][0]] = i
 	
 	# Add edges
-	for e in edges:
+	for e in anime_edges:
 
 		found_from = -1
 		found_to = -1
