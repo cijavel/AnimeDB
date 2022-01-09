@@ -30,11 +30,20 @@ except ImportError:
 
 config = confi.get_configfile()
 const_path_DB                           = config.get_KeyValue("settings", "path_DB")
+const_BT                                = config.get_KeyValue("settings", "BT")
 const_path_serienimport                 = config.get_KeyValue("serienImport", "path_serienimport")
 const_first_language                    = config.get_KeyValue("serienImport", "first_language")
 const_storage                           = config.get_KeyValue("serienImport", "storage")
 const_importedDIR                       = config.get_KeyValue("serienImport", "importedDIR")
 const_levenshtein_distance_percent      = config.get_KeyValue("serienImport", "levenshtein_distance_percent")
+
+
+# different between Linux and Windows T.T
+if const_BT.lower() = "windows":
+	const_separator == '\\'
+else:
+	const_separator == '/'
+
 
 connectAnimeDB = sqlAni.get_sql_anime()
 
@@ -85,7 +94,7 @@ def get_subdirectories():
 			
 		# check if subfolder
 		for item in directory_contents:
-			if os.path.isdir(path + "\\" + "\\" + item) and item != const_importedDIR:
+			if os.path.isdir(path + const_separator + const_separator + item) and item != const_importedDIR:
 				subdirectories.append(item)
 		return (subdirectories)
 	else:
@@ -204,8 +213,8 @@ def move_dir_to_importedDIR(list_of_dirs):
 			dirName = singleDir["folder"]
 			mov    = singleDir["move"]
 			if mov =="y":
-				original = const_path_serienimport + "\\" + dirName
-				target   = const_path_serienimport + "\\" + const_importedDIR + "\\" + dirName
+				original = const_path_serienimport + const_separator + dirName
+				target   = const_path_serienimport + const_separator + const_importedDIR + const_separator + dirName
 				shutil.move(original,target)
 				print("move directory (" + dirName + ") to " + const_importedDIR)
 	else:
