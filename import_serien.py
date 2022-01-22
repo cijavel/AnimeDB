@@ -79,9 +79,9 @@ def get_levenshtein_percent(string1, string2, kommastelle):
 def get_extractAnimeNamefromDir(name):
 	if name:
 		name = re.sub('\[[a-zA-Z0-9_ .-]+\]', '', name)
-		
+
 	return name.rstrip(" ")
-	
+
 #----------------------------------------
 # Name: get_subdirectories
 # - get folders from os path
@@ -188,7 +188,7 @@ def change_animelist_to_dict(list_of_animes):
 #----------------------------------------
 def insert_anime_in_DB(DBconn, list_of_anime):
 	conn = sqlite3.connect(DBconn)
-	todayformat = date.today().strftime("%d.%m.%Y")
+	todayformat = date.today().strftime("%Y.%m.%d")
 	storageID = connectAnimeDB.get_SQL_StorageID(const_path_DB, const_storage )
 	first_languageID  = connectAnimeDB.get_SQL_spracheID(const_path_DB, const_first_language)
 
