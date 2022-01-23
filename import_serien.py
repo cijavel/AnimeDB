@@ -12,11 +12,6 @@ import shutil
 from datetime import date
 from sys import platform
 
-
-
-
-
-
 try:
     import functions.get_configfile as confi
 except ImportError:
@@ -53,7 +48,6 @@ elif platform == "win32":
 connectAnimeDB = sqlAni.get_sql_anime()
 
 #----------------------------------------
-# Date: 2021.07.07
 # Name: get_levenshtein_percent
 # - get levenshtein as percent
 #----------------------------------------
@@ -133,7 +127,6 @@ def get_subdirectories():
 
 
 #----------------------------------------
-# Date: 2021.07.07
 # Name: check_levenshtein_for_anime_in_DB
 # - check if anime already in DB
 #----------------------------------------
@@ -183,8 +176,8 @@ def check_levenshtein_for_anime_in_DB(DBconn):
 		return()
 
 #----------------------------------------
-# Date: 2021.07.10
 # Name: change_animelist_to_dict
+# - convert to dict
 #----------------------------------------
 def change_animelist_to_dict(list_of_animes):
 	header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
@@ -207,7 +200,6 @@ def change_animelist_to_dict(list_of_animes):
 
 
 #----------------------------------------
-# Date: 2021.07.07
 # Name: insert_anime_in_DB
 # - check if anime already in DB
 #----------------------------------------
@@ -241,7 +233,6 @@ def insert_anime_in_DB(DBconn, list_of_anime):
 	return()
 
 #----------------------------------------
-# Date: 2021.08.01
 # Name: move_dir_to_importedDIR
 # - move a list of dir to the importedDIR. Only if value of the key 'move' = y
 #----------------------------------------
@@ -260,11 +251,13 @@ def move_dir_to_importedDIR(list_of_dirs):
 	return()
 
 
+#----------------------------------------
+#                   MAIN
+#----------------------------------------
 
-# MAIN
-list_of_compared_animes  = check_levenshtein_for_anime_in_DB(const_path_DB)
-dirct_of_anime = change_animelist_to_dict(list_of_compared_animes)
-move_dir_to_importedDIR(dirct_of_anime)
-insert_anime_in_DB(const_path_DB, dirct_of_anime)
+list_of_compared_animes  = check_levenshtein_for_anime_in_DB(const_path_DB) #get anime list with compare result and if it should move
+dirct_of_anime = change_animelist_to_dict(list_of_compared_animes) # convert to dict
+move_dir_to_importedDIR(dirct_of_anime) # move the folder
+insert_anime_in_DB(const_path_DB, dirct_of_anime) # wirte in DB
 
 
