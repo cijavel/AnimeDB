@@ -83,6 +83,31 @@ def get_extractAnimeNamefromDir(name):
 	return name.rstrip(" ")
 
 #----------------------------------------
+# Name: get_extractAnimeAttributefromDir
+# - extract anime attribute from directory name
+#----------------------------------------
+def get_extractAnimeAttributefromDir(name):
+	if name:
+		name = re.findall('\[[a-zA-Z0-9_ .-]+\]',  name)
+	return name
+
+#----------------------------------------
+# Name: get_languagefromFileName
+# - extract anime name from directory name
+#----------------------------------------
+def get_languagefromFileName(nametable):
+	cleartag = ""
+	if nametable:
+		for n in nametable:
+			list_of = re.findall('\[[a-zA-Z]{5,6}\]',  n)
+
+			for i in list_of:
+				subtag = re.findall('[a-zA-Z]+', i)
+				for cleartag in subtag:
+					return cleartag
+
+
+#----------------------------------------
 # Name: get_subdirectories
 # - get folders from os path
 #----------------------------------------
