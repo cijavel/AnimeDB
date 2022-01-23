@@ -93,7 +93,7 @@ def get_extractAnimeAttributefromDir(name):
 
 #----------------------------------------
 # Name: get_languagefromFileName
-# - extract anime name from directory name
+# - extract anime language tag from table
 #----------------------------------------
 def get_languagefromFileName(nametable):
 	cleartag = ""
@@ -104,7 +104,7 @@ def get_languagefromFileName(nametable):
 			for i in list_of:
 				subtag = re.findall('[a-zA-Z]+', i)
 				for cleartag in subtag:
-					return cleartag
+					return cleartag.lower()
 
 
 #----------------------------------------
@@ -219,6 +219,14 @@ def insert_anime_in_DB(DBconn, list_of_anime):
 
 	if list_of_anime:
 		for a in list_of_anime:
+
+			language_tag = get_languagefromFileName(get_extractAnimeAttributefromDir(a))
+			
+			if language_tag:
+				languageID = connectAnimeDB.get_SQL_spracheID(const_path_DB, language_tag)
+			else:
+				languageID = first_languageID
+		
 			folder = a["folder"]
 			mov = a["move"]
 			if mov == "y":
