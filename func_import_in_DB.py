@@ -66,10 +66,9 @@ def get_levenshtein_percent(string1, string2, kommastelle):
             max_lenght = len(string1)
             
         percent = (1 - ( pylev.levenshtein(string1, string2) / max_lenght ))*100
-
         return(round(percent, kommastelle))
     else:
-        print("get_levenshtein_percent - both strings are empty")
+        logger.error('both strings are empty')
         return ()
 
 #----------------------------------------
@@ -79,22 +78,25 @@ def get_levenshtein_percent(string1, string2, kommastelle):
 def get_extractAnimeNamefromDir(name):
     if name:
         name = re.sub('\[[a-zA-Z0-9_ .-]+\]', '', name)
-        
+    else:
+        logger.error("no anime name -Dir- '%s' for extraction", name)
     return name.rstrip(" ")
 
 #----------------------------------------
 # Name: get_extractAnimeAttributefromDir
-# - extract anime attribute from directory name
+# - extract anime attribute list from directory name
 #----------------------------------------
-def get_extractAnimeAttributefromDir(name):
-    print (name)
-    if name:
-        name = re.findall('\[[a-zA-Z0-9_ .-]+\]',  name)
-    return name
+def get_extractAnimeAttributefromDir(directory):
+    if directory:
+        liust = re.findall('\[[a-zA-Z0-9_ .-]+\]',  directory)
+    else:
+        logger.error("no anime name -Attri- '%s' for extraction", directory)
+
+    return liust
 
 #----------------------------------------
 # Name: get_languagefromFileName
-# - extract anime language tag from table
+# - extract anime language tag from table (directory attribute list)
 #----------------------------------------
 def get_languagefromFileName(nametable):
     cleartag = ""
@@ -105,8 +107,10 @@ def get_languagefromFileName(nametable):
             for i in list_of:
                 subtag = re.findall('[a-zA-Z]+', i)
                 for cleartag in subtag:
-                    return cleartag.lower()
 
+                    return cleartag.lower()
+    else:
+        logger.warning("attributs list of dict name is empty")
 
 
 
@@ -161,11 +165,11 @@ def check_levenshtein_for_anime_in_DB(DBconn):
                     iDistanceCache01 = iDistanceCache02
                     singleAnimeName = singleAnime[0]
             if iDistanceCache01 > float(const_levenshtein_distance_percent):
-                viewtable.append([i, "*", str(iDistanceCache01), fname, extractName,  singleAnimeName, ""])
+                viewtable.append([i, "*", str(iDistanceCache01), extractName, singleAnimeName, "", fname])
             else:
-                viewtable.append([i, "", str(iDistanceCache01),  fname, extractName,  singleAnimeName, ""])
+                viewtable.append([i, "" , str(iDistanceCache01), extractName, singleAnimeName, "", fname])
             
-        header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
+        header = ["ID", " ", "prozent", "search for",  "found", "move" , "folder"]
         termtables.print( viewtable, header=header,  style="            -  ")
         
         # choose_to_move
@@ -174,8 +178,8 @@ def check_levenshtein_for_anime_in_DB(DBconn):
             a = []
             a.append(h)
             print("")
-            print("-----------------------------------------------------------------")
-            header = ["ID", " ", "prozent", "folder", "search for",  "found", "move"]
+            print("--------------------------------------------------------------------------------------------------------------------------------------------")
+            header = ["ID", " ", "prozent", "search for",  "found", "move", "folder"]
             termtables.print( a, header=header,  style="               ")
             print("")
             eingabe = input("move? [y/N]: ")
@@ -221,11 +225,10 @@ def insert_anime_in_DB(DBconn, list_of_anime):
     storageID = connectAnimeDB.get_SQL_StorageID(const_path_DB, const_storage )
 
     if list_of_anime:
-        print("***************************")
-        print(list_of_anime)
-        print("***************************")
-        for a in list_of_anime:       
-            language_tag = get_languagefromFileName(get_extractAnimeAttributefromDir(a))
+
+        for a in list_of_anime:    
+
+            language_tag = get_languagefromFileName(get_extractAnimeAttributefromDir(a["folder"]))
             if language_tag:
                 languageID = connectAnimeDB.get_SQL_spracheID(const_path_DB, language_tag)
             else:
