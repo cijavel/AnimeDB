@@ -5,6 +5,7 @@ Created on 05.09.2022
 
 import os
 import pylev
+import logging
 import re
 import sqlite3
 import termtables
@@ -12,6 +13,9 @@ import shutil
 from datetime import date
 from sys import platform
 
+from logging import config
+config.fileConfig("config/logging.conf")
+logger = logging.getLogger("importinDB")
 
 try:
     import functions.get_configfile as confi
@@ -83,6 +87,7 @@ def get_extractAnimeNamefromDir(name):
 # - extract anime attribute from directory name
 #----------------------------------------
 def get_extractAnimeAttributefromDir(name):
+    print (name)
     if name:
         name = re.findall('\[[a-zA-Z0-9_ .-]+\]',  name)
     return name
@@ -216,6 +221,9 @@ def insert_anime_in_DB(DBconn, list_of_anime):
     storageID = connectAnimeDB.get_SQL_StorageID(const_path_DB, const_storage )
 
     if list_of_anime:
+        print("***************************")
+        print(list_of_anime)
+        print("***************************")
         for a in list_of_anime:       
             language_tag = get_languagefromFileName(get_extractAnimeAttributefromDir(a))
             if language_tag:
