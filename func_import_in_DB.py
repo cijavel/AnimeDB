@@ -132,11 +132,13 @@ def get_subdirectories():
             
         # check if subfolder
         for item in directory_contents:
-            if os.path.isdir(path + const_separator + item) and item != const_importedDIR:
+            
+            if  os.path.join(path, item) and item != const_importedDIR:
                 subdirectories.append(item)
         return (subdirectories)
     else:
-        print("get_subdirectories - no path in config file")
+        logger.error("no path in config file")
+
         return ()
 
 
@@ -182,12 +184,12 @@ def check_levenshtein_for_anime_in_DB(DBconn):
             header = ["ID", " ", "prozent", "search for",  "found", "move", "folder"]
             termtables.print( a, header=header,  style="               ")
             print("")
-            eingabe = input("move? [y/N]: ")
+            eingabe = input("write in DB? [y/N]: ")
             h[6] = eingabe
         
         return(viewtable)
     else:
-        print("check_levenshtein_for_anime_in_DB - there is no folder")
+        logger.error("there is no folder")
         return()
 
 #----------------------------------------
@@ -210,7 +212,7 @@ def change_animelist_to_dict(list_of_animes):
             dict["move"]    = i[6]
             list.append(dict)
     else:
-        print("change_animelist_to_dict - no list")
+        logger.error("no list")
     return(list)
 
 
@@ -242,9 +244,9 @@ def insert_anime_in_DB(DBconn, list_of_anime):
                     strInsertSQL = "INSERT INTO anime (foldername, fs_storage, fs_sprache, entrydate) VALUES (:xfolder, :xSto, :xSpr, :xdat)"
                     cursor.execute(strInsertSQL,  {"xfolder": get_extractAnimeNamefromDir(folder), "xSto": storageID, "xSpr": languageID, "xdat": todayformat })
                     conn.commit()
-                print("Add Anime (" + folder + ") to DB")
+                logger.info("Add Anime (" + folder + ") to DB")
     else:
-        print("insert_anime_in_DB - no folder list")
+        logger.error("no folder list")
     return()
 
 #----------------------------------------
@@ -258,12 +260,15 @@ def move_dir_to_importedDIR(list_of_dirs):
             dirName = singleDir["folder"]
             mov    = singleDir["move"]
             if mov =="y":
-                original = const_path_serienimport + const_separator + dirName
-                target   = const_path_serienimport + const_separator + const_importedDIR + const_separator + dirName
+                
+                
+                original = os.path.join(const_path_serienimport, dirName)
+                target   = os.path.join(const_path_serienimport, const_importedDIR, dirName)
+                
                 shutil.move(original,target)
-                print("move directory (" + dirName + ") to " + const_importedDIR)
+                logger.info("move directory (" + dirName + ") to " + const_importedDIR)
     else:
-        print("move_dir_to_importedDIR - no directory list")
+        logger.error("no directory list")
     return()
 
 
