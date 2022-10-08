@@ -18,16 +18,16 @@
 
 
 - Hash
--- Erstelle eine Datei pro Ordner in der eine Hash für jede Datei steht (ausser der Hashwerte-Datei)
--- Prüfe alle Dateien anhand der Hashwerte-Datei in den Ordner. Liefere Fehler zurück
+-- (todo) Erstelle eine Datei pro Ordner in der eine Hash für jede Datei steht (ausser der Hashwerte-Datei)
+-- (todo) Prüfe alle Dateien anhand der Hashwerte-Datei in den Ordner. Liefere Fehler zurück
 
+- Analyse
+-- (todo) Analysiere, ob Anime mehr Sprachen besitzt als Erstsprache (Sub/Dub)
+-- (todo) Analysiere, Qualität der Mediendateien
+-- (todo) Analysiere, Speicherpfad auf Server
 
-- Analysiere, ob Anime mehr Sprachen besitzt als Erstsprache (Sub/Dub)
-- Analysiere, Qualität der Mediendateien
-- Analysiere, Speicherpfad auf Server
-
-
-- Erstelle HTML mit Anime-Name, Beschreibung en, Folgenanzahl, Auflösung, Sprachen
-- Umbenennen über DB
-- Untersuche Ordner auf neuen Animes (zB damit Umbenennung bemerkt werden)
-- Erstellen von Strukturen (Hartlink)
+- Struktur
+-- (todo) Erstelle HTML mit Anime-Name, Beschreibung en, Folgenanzahl, Auflösung, Sprachen
+-- (todo) Umbenennen über DB
+-- (todo) Untersuche Ordner auf neuen Animes (zB damit Umbenennung bemerkt werden)
+-- (todo) Erstellen von Strukturen (Hartlink)
