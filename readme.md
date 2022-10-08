@@ -25,7 +25,7 @@ Analyse Eigenschaften
 - (todo) Analysiere, Qualität der Mediendateien
 - (todo) Analysiere, Speicherpfad auf Server
 
-- Struktur
+Struktur
 - (todo) Erstelle HTML mit Anime-Name, Beschreibung en, Folgenanzahl, Auflösung, Sprachen
 - (todo) Umbenennen über DB
 - (todo) Untersuche Ordner auf neuen Animes (zB damit Umbenennung bemerkt werden)
